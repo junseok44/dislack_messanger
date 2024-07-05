@@ -6,3 +6,10 @@ export const PAGE_ROUTE = {
   ERROR: "/error",
   ALL: "*",
 };
+
+export const API_ROUTE = {
+  REGISTER: "/auth/register",
+  LOGIN: "/auth/login",
+  CHECK: "/auth/check",
+  LOGOUT: "/auth/logout",
+};

@@ -3,10 +3,13 @@
     "target": "ES6",
     "module": "commonjs",
     "strict": true,
+    "strictNullChecks": false, // 필요시 조정
+    "noImplicitAny": false,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "outDir": "./dist",
-    "rootDir": "./src"
+    "forceConsistentCasingInFileNames": true,
+    "typeRoots": ["./node_modules/@types", "./src/@types"],
+    "types": ["node", "express"]
   },
   "include": ["src/**/*"]
 }

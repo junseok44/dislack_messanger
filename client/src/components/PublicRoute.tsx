@@ -4,9 +4,9 @@ import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 
 const PublicRoute: React.FC = () => {
-  const { isAuthenticated } = useAuth();
+  const { user } = useAuth();
 
-  return !isAuthenticated ? <Outlet /> : <Navigate to="/" />;
+  return !user ? <Outlet /> : <Navigate to="/" />;
 };
 
 export default PublicRoute;

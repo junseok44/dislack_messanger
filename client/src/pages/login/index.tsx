@@ -3,6 +3,9 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import Navbar from "@/components/Navbar";
+import { useMutation } from "@tanstack/react-query";
+import { api } from "@/lib/fetch";
+import { API_ROUTE } from "@/constants/routeName";
 
 interface LoginFormInputs {
   username: string;
@@ -14,21 +17,43 @@ const LoginPage: React.FC = () => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<LoginFormInputs>();
+  } = useForm<LoginFormInputs>({
+    defaultValues: {
+      username: "",
+      password: "",
+    },
+  });
 
   const navigate = useNavigate();
 
   const { login } = useAuth();
 
+  const {
+    mutate: loginUser,
+    isError,
+    error,
+  } = useMutation({
+    mutationFn: (data: { username: string; password: string }) =>
+      api.post(API_ROUTE.LOGIN, data),
+
+    onSuccess: (data) => {
+      login(data.user);
+    },
+
+    onError: (error) => {
+      console.log(error);
+    },
+  });
+
   const onSubmit: SubmitHandler<LoginFormInputs> = (data) => {
-    login();
-    navigate("/");
+    loginUser(data);
   };
 
   return (
     <div>
       <Navbar />
       <h2>Login</h2>
+      {isError && <p>{error.message}</p>}
       <form onSubmit={handleSubmit(onSubmit)}>
         <div>
           <label htmlFor="username">Username</label>

@@ -1,11 +1,20 @@
 // src/types/express/index.d.ts
 
-import { User } from "../../controllers/auth";
+import { User } from "./user";
 
 declare global {
   namespace Express {
     interface Request {
-      user?: User; // 여기서 User 타입을 정의
+      user: User | null;
+    }
+  }
+
+  namespace NodeJS {
+    interface ProcessEnv {
+      JWT_ACCESS_SECRET: string;
+      JWT_REFRESH_SECRET: string;
+      NODE_ENV: "development" | "production";
+      SERVER_PORT: number;
     }
   }
 }

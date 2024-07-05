@@ -4,7 +4,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 
 const Navbar: React.FC = () => {
-  const { isAuthenticated, logout } = useAuth();
+  const { user, logout } = useAuth();
 
   return (
     <nav>
@@ -13,7 +13,7 @@ const Navbar: React.FC = () => {
           <Link to={PAGE_ROUTE.HOME}>Home</Link>
         </li>
 
-        {!isAuthenticated && (
+        {!user && (
           <>
             <li>
               <Link to={PAGE_ROUTE.LOGIN}>Login</Link>
@@ -23,9 +23,9 @@ const Navbar: React.FC = () => {
             </li>
           </>
         )}
-        {isAuthenticated && (
+        {user && (
           <li>
-            <button onClick={logout}>Logout</button>
+            <button onClick={() => logout()}>Logout</button>
           </li>
         )}
       </ul>

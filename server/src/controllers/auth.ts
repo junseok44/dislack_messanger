@@ -1,94 +1,167 @@
 import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
-import jwt, { JwtPayload } from "jsonwebtoken";
-import tokenConfig from "../config/token";
+import jwt from "jsonwebtoken";
+import prisma from "../config/db"; // Assuming you are using Prisma
+import tokenConfig, { getTokenCookieOption } from "../config/token";
 import { generateAccessToken, generateRefreshToken } from "../utils/token";
+import { z } from "zod";
+import { ERROR_CODES } from "../constants/errorCode";
+import { RequestWithUser } from "../@types/express";
 
-export interface User {
-  id: number;
-  username: string;
-  password: string;
-}
+const userSchema = z.object({
+  username: z.string().min(3).max(50),
+  password: z.string().min(8).max(100),
+});
 
-let users: User[] = []; // 임시 사용자 저장소
-
-export const register = async (req: Request, res: Response) => {
+export const register = async (req: RequestWithUser, res: Response) => {
   try {
+    userSchema.parse(req.body);
+
     const { username, password } = req.body;
+
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = { id: users.length + 1, username, password: hashedPassword };
-    users.push(user);
+
+    await prisma.user.create({
+      data: { username, password: hashedPassword },
+    });
     res.status(201).json({ message: "User registered successfully" });
   } catch (error) {
-    res.status(500).json({ message: "Internal Server Error" });
+    console.log(error);
+    res.status(500).json({
+      errorCode: ERROR_CODES.INTERNAL_SERVER_ERROR,
+      message: "Internal Server Error",
+    });
   }
 };
 
-export const login = async (req: Request, res: Response) => {
+export const login = async (req: RequestWithUser, res: Response) => {
   try {
-    const { username, password } = req.body;
-    const user = users.find((u) => u.username === username);
+    userSchema.parse(req.body);
 
-    if (!user) return res.status(400).json({ message: "Invalid credentials" });
+    const { username, password } = req.body;
+
+    const user = await prisma.user.findUnique({ where: { username } });
+
+    if (!user)
+      return res.status(400).json({
+        errorCode: ERROR_CODES.USER_NOT_FOUND,
+        message: "User doesn't exist",
+      });
 
     const validPassword = await bcrypt.compare(password, user.password);
+
     if (!validPassword)
-      return res.status(400).json({ message: "Invalid credentials" });
+      return res.status(400).json({
+        errorCode: ERROR_CODES.INVALID_PASSWORD,
+        message: "Invalid password",
+      });
 
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
 
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "strict",
+    res.cookie("accessToken", accessToken, {
+      ...getTokenCookieOption("accessToken"),
     });
 
-    res.json({ accessToken });
+    res.cookie("refreshToken", refreshToken, {
+      ...getTokenCookieOption("refreshToken"),
+    });
+
+    res.json({
+      message: "Logged in successfully",
+      user: {
+        username: user.username,
+      },
+    });
   } catch (error) {
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).json({
+      errorCode: ERROR_CODES.INTERNAL_SERVER_ERROR,
+      message: "Internal Server Error",
+    });
   }
 };
 
-export const refreshToken = (req: Request, res: Response) => {
+export const refreshToken = async (req: RequestWithUser, res: Response) => {
   const refreshToken = req.cookies.refreshToken;
 
-  if (!refreshToken) return res.sendStatus(401);
+  if (!refreshToken)
+    return res.sendStatus(401).json({
+      errorCode: ERROR_CODES.UNAUTHORIZED,
+      message: "No refresh token provided",
+    });
 
   try {
-    const user = jwt.verify(refreshToken, tokenConfig.jwtRefreshSecret) as User;
+    const decoded = jwt.verify(
+      refreshToken,
+      tokenConfig.jwtRefreshSecret!
+    ) as jwt.JwtPayload;
+
+    const user = await prisma.user.findUnique({ where: { id: decoded.id } });
+    if (!user)
+      return res.status(403).json({
+        errorCode: ERROR_CODES.FORBIDDEN,
+        message: "User not found",
+      });
 
     const newAccessToken = generateAccessToken(user);
 
+    res.cookie("accessToken", newAccessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+      maxAge: 15 * 60 * 1000, // 15분
+    });
+
     res.json({ accessToken: newAccessToken });
   } catch (error) {
-    res.status(403).json({ message: "Invalid Refresh Token" });
+    res.status(403).json({
+      errorCode: ERROR_CODES.INVALID_REFRESH_TOKEN,
+      message: "Invalid Refresh Token",
+    });
   }
 };
 
-export const checkAuth = (req: Request, res: Response) => {
-  const accessToken = req.headers.authorization?.split(" ")[1];
-
-  if (!accessToken) return res.sendStatus(401);
+export const checkAuth = async (req: RequestWithUser, res: Response) => {
+  if (!req.user) {
+    return res.status(403).json({
+      errorCode: ERROR_CODES.FORBIDDEN,
+      message: "Invalid access token",
+    });
+  }
 
   try {
-    const user = jwt.verify(
-      accessToken,
-      tokenConfig.jwtSecret
-    ) as jwt.JwtPayload;
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      select: {
+        username: true,
+      },
+    });
+
+    if (!user)
+      return res.status(403).json({
+        errorCode: ERROR_CODES.FORBIDDEN,
+        message: "Invalid access token",
+      });
 
     res.json({ isAuthenticated: true, user });
   } catch (error) {
-    res.json({ isAuthenticated: false });
+    res.status(403).json({
+      errorCode: ERROR_CODES.FORBIDDEN,
+      message: "Invalid access token",
+    });
   }
 };
 
-export const logout = (req: Request, res: Response) => {
-  res.cookie("refreshToken", "", {
+export const logout = (req: RequestWithUser, res: Response) => {
+  res.cookie("accessToken", "", {
+    ...getTokenCookieOption("accessToken"),
     expires: new Date(0),
-    httpOnly: true,
-    secure: true,
-    sameSite: "strict",
   });
+
+  res.cookie("refreshToken", "", {
+    ...getTokenCookieOption("refreshToken"),
+    expires: new Date(0),
+  });
+
   res.json({ message: "Logged out successfully" });
 };
