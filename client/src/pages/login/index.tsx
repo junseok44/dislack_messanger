@@ -1,11 +1,23 @@
-import React from "react";
-import { useForm, SubmitHandler } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
 import Navbar from "@/components/Navbar";
-import { useMutation } from "@tanstack/react-query";
-import { api } from "@/lib/fetch";
 import { API_ROUTE } from "@/constants/routeName";
+import { useAuth } from "@/contexts/AuthContext";
+import { api } from "@/lib/fetch";
+import { useMutation } from "@tanstack/react-query";
+import React from "react";
+import { SubmitHandler, useForm } from "react-hook-form";
+import {
+  Box,
+  Button,
+  FormControl,
+  FormLabel,
+  Input,
+  FormErrorMessage,
+  Heading,
+  VStack,
+  useColorModeValue,
+  Text,
+  Stack,
+} from "@chakra-ui/react";
 
 interface LoginFormInputs {
   username: string;
@@ -16,15 +28,13 @@ const LoginPage: React.FC = () => {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<LoginFormInputs>({
     defaultValues: {
       username: "",
       password: "",
     },
   });
-
-  const navigate = useNavigate();
 
   const { login } = useAuth();
 
@@ -39,7 +49,6 @@ const LoginPage: React.FC = () => {
     onSuccess: (data) => {
       login(data.user);
     },
-
     onError: (error) => {
       console.log(error);
     },
@@ -50,31 +59,60 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div>
+    <Stack minH={"100vh"} direction={"column"}>
       <Navbar />
-      <h2>Login</h2>
-      {isError && <p>{error.message}</p>}
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <div>
-          <label htmlFor="username">Username</label>
-          <input
-            id="username"
-            {...register("username", { required: "Username is required" })}
-          />
-          {errors.username && <p>{errors.username.message}</p>}
-        </div>
-        <div>
-          <label htmlFor="password">Password</label>
-          <input
-            id="password"
-            type="password"
-            {...register("password", { required: "Password is required" })}
-          />
-          {errors.password && <p>{errors.password.message}</p>}
-        </div>
-        <button type="submit">Login</button>
-      </form>
-    </div>
+      <Box bg={useColorModeValue("gray.50", "gray.800")} p={4} flexGrow={1}>
+        <VStack spacing={8} align="center" mt={10}>
+          <Heading as="h2" size="xl">
+            Login
+          </Heading>
+          {isError && <Text color="red.500">{error.message}</Text>}
+          <Box
+            as="form"
+            onSubmit={handleSubmit(onSubmit)}
+            bg={useColorModeValue("white", "gray.700")}
+            p={8}
+            boxShadow="lg"
+            rounded="lg"
+          >
+            <VStack spacing={4}>
+              <FormControl id="username" isInvalid={Boolean(errors.username)}>
+                <FormLabel>Username</FormLabel>
+                <Input
+                  id="username"
+                  {...register("username", {
+                    required: "Username is required",
+                    minLength: { value: 3, message: "Username is too short" },
+                    maxLength: { value: 50, message: "Username is too long" },
+                  })}
+                />
+                <FormErrorMessage>
+                  {errors.username && errors.username.message}
+                </FormErrorMessage>
+              </FormControl>
+              <FormControl id="password" isInvalid={Boolean(errors.password)}>
+                <FormLabel>Password</FormLabel>
+                <Input
+                  id="password"
+                  type="password"
+                  {...register("password", {
+                    required: "Password is required",
+                    minLength: { value: 8, message: "Password is too short" },
+                    maxLength: { value: 100, message: "Password is too long" },
+                  })}
+                />
+                <FormErrorMessage>
+                  {errors.password && errors.password.message}
+                </FormErrorMessage>
+              </FormControl>
+              <Button type="submit" colorScheme="teal" isLoading={isSubmitting}>
+                Login
+              </Button>
+            </VStack>
+          </Box>
+        </VStack>
+      </Box>
+    </Stack>
   );
 };
 

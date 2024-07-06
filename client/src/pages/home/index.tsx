@@ -1,19 +1,21 @@
+import Container from "@/components/Container";
 import Navbar from "@/components/Navbar";
 import { API_ROUTE, PAGE_ROUTE } from "@/constants/routeName";
 import { useAuth } from "@/contexts/AuthContext";
 import { api, ApiError } from "@/lib/fetch";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { Box, Stack, VStack } from "@chakra-ui/react";
+import { useMutation } from "@tanstack/react-query";
 
 const Home = () => {
   const { user, logout } = useAuth();
 
-  const { mutate, isSuccess } = useMutation({
+  const { mutate, isSuccess } = useMutation<any, ApiError>({
     mutationFn: () => api.get(API_ROUTE.CHECK, {}),
     onSuccess: (data) => {
       console.log(data);
     },
     onError: (error) => {
-      if (error instanceof ApiError && error.statusCode === 401) {
+      if (error.statusCode === 401) {
         logout(PAGE_ROUTE.LOGIN);
       }
     },
@@ -29,13 +31,17 @@ const Home = () => {
   // });
 
   return (
-    <div>
+    <Stack direction={"column"} minH={"100vh"}>
       <Navbar />
-      this is home!!
-      {user && <div>{user.username}</div>}
-      <button onClick={() => mutate()}>Check</button>
-      {isSuccess && <div>Success</div>}
-    </div>
+      <Box flexGrow={1}>
+        <Container>
+          this is home!!
+          {user && <div>{user.username}</div>}
+          <button onClick={() => mutate()}>Check</button>
+          {isSuccess && <div>Success</div>}
+        </Container>
+      </Box>
+    </Stack>
   );
 };
 

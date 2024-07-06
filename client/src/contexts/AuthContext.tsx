@@ -35,6 +35,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const logout = (redirectUrl?: string) => {
+    logoutAndRedirect(redirectUrl);
+  };
+
   const { mutate: logoutAndRedirect } = useMutation({
     mutationFn: (redirectUrl?: string) => api.post(API_ROUTE.LOGOUT, {}),
     onSuccess: (_, redirectUrl) => {
@@ -43,12 +47,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     },
   });
 
-  const logout = (redirectUrl?: string) => {
-    logoutAndRedirect(redirectUrl);
-  };
-
-  const { mutate: checkUser } = useMutation({
+  const { mutate: checkUser, isPending } = useMutation({
     mutationFn: () => api.get(API_ROUTE.CHECK, {}),
+    onMutate: () => {
+      setNetworkError(false);
+    },
     onError: (err) => {
       if (err instanceof ApiError) {
         if (err.statusCode === 401) {

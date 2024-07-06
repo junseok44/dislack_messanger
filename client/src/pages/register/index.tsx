@@ -6,6 +6,19 @@ import Navbar from "@/components/Navbar";
 import { api } from "@/lib/fetch";
 import { useMutation } from "@tanstack/react-query";
 import { API_ROUTE } from "@/constants/routeName";
+import {
+  Box,
+  Button,
+  FormControl,
+  FormLabel,
+  Input,
+  FormErrorMessage,
+  Heading,
+  VStack,
+  useColorModeValue,
+  Text,
+  Stack,
+} from "@chakra-ui/react";
 
 interface RegisterFormInputs {
   username: string;
@@ -17,7 +30,7 @@ const RegisterPage: React.FC = () => {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
     watch,
     reset,
   } = useForm<RegisterFormInputs>();
@@ -32,81 +45,106 @@ const RegisterPage: React.FC = () => {
   } = useMutation({
     mutationFn: (data: { username: string; password: string }) =>
       api.post(API_ROUTE.REGISTER, data),
+    onSuccess: () => {
+      reset();
+      navigate("/login");
+    },
+    onError: (error) => {},
   });
 
   const onSubmit: SubmitHandler<RegisterFormInputs> = async (data) => {
-    try {
-      registerUser(data);
-      reset();
-      // navigate("/login");
-    } catch (error) {
-      console.error(error);
-    }
+    registerUser(data);
   };
 
   // 비밀번호 일치 확인을 위한 watch 사용
   const password = watch("password");
 
   return (
-    <div>
+    <Stack minH={"100vh"} direction={"column"}>
       <Navbar />
-      <h2>Register</h2>
-      {isError && (
-        <div>
-          <p>{error?.message}</p>
-        </div>
-      )}
-      {isSuccess && (
-        <div>
-          <p>Register success</p>
-        </div>
-      )}
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <div>
-          <label htmlFor="username">Username</label>
-          <input
-            id="username"
-            {...register("username", {
-              required: "Username is required",
-              minLength: {
-                value: 6,
-                message: "Username must be at least 6 characters",
-              },
-            })}
-          />
-          {errors.username && <p>{errors.username.message}</p>}
-        </div>
-        <div>
-          <label htmlFor="password">Password</label>
-          <input
-            id="password"
-            type="password"
-            {...register("password", {
-              required: "Password is required",
-              minLength: {
-                value: 8,
-                message: "Password must be at least 8 characters",
-              },
-            })}
-          />
-          {errors.password && <p>{errors.password.message}</p>}
-        </div>
-        <div>
-          <label htmlFor="confirmPassword">Confirm Password</label>
-          <input
-            id="confirmPassword"
-            type="password"
-            {...register("confirmPassword", {
-              required: "Please confirm your password",
-              validate: (value) =>
-                value === password || "Passwords do not match",
-            })}
-          />
-          {errors.confirmPassword && <p>{errors.confirmPassword.message}</p>}
-        </div>
-        <button type="submit">Register</button>
-      </form>
-    </div>
+      <Box bg={useColorModeValue("gray.50", "gray.800")} p={4} flexGrow={1}>
+        <VStack spacing={8} align="center" mt={10}>
+          <Heading as="h2" size="xl">
+            Register
+          </Heading>
+          {isError && <Text color="red.500">{error?.message}</Text>}
+
+          <Box
+            as="form"
+            onSubmit={handleSubmit(onSubmit)}
+            bg={useColorModeValue("white", "gray.700")}
+            p={8}
+            boxShadow="lg"
+            rounded="lg"
+          >
+            <VStack spacing={4}>
+              <FormControl id="username" isInvalid={Boolean(errors.username)}>
+                <FormLabel>Username</FormLabel>
+                <Input
+                  id="username"
+                  {...register("username", {
+                    required: "Username is required",
+                    minLength: {
+                      value: 3,
+                      message: "Username must be at least 3 characters",
+                    },
+                    maxLength: {
+                      value: 50,
+                      message: "Username must be at most 50 characters",
+                    },
+                  })}
+                />
+                <FormErrorMessage>
+                  {errors.username && errors.username.message}
+                </FormErrorMessage>
+              </FormControl>
+              <FormControl id="password" isInvalid={Boolean(errors.password)}>
+                <FormLabel>Password</FormLabel>
+                <Input
+                  id="password"
+                  type="password"
+                  {...register("password", {
+                    required: "Password is required",
+                    minLength: {
+                      value: 8,
+                      message: "Password must be at least 8 characters",
+                    },
+                    maxLength: {
+                      value: 100,
+                      message: "Password must be at most 100 characters",
+                    },
+                  })}
+                />
+                <FormErrorMessage>
+                  {errors.password && errors.password.message}
+                </FormErrorMessage>
+              </FormControl>
+              <FormControl
+                id="confirmPassword"
+                isInvalid={Boolean(errors.confirmPassword)}
+              >
+                <FormLabel>Confirm Password</FormLabel>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  {...register("confirmPassword", {
+                    required: "Please confirm your password",
+                    validate: (value) =>
+                      value === password || "Passwords do not match",
+                  })}
+                />
+                <FormErrorMessage>
+                  {errors.confirmPassword && errors.confirmPassword.message}
+                </FormErrorMessage>
+              </FormControl>
+              <Button type="submit" colorScheme="teal" isLoading={isSubmitting}>
+                Register
+              </Button>
+            </VStack>
+          </Box>
+        </VStack>
+      </Box>
+    </Stack>
   );
 };
 
