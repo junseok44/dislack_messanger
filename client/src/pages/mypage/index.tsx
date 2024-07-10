@@ -1,5 +1,16 @@
+import { useAuth } from "@/contexts/AuthContext";
+
 const MyPage = () => {
-  return <div className="flex-grow h-full">this is mypage</div>;
+  const { logout } = useAuth();
+
+  return (
+    <div
+      className="flex-grow h-full"
+      onClick={() => {
+        logout();
+      }}
+    ></div>
+  );
 };
 
 export default MyPage;

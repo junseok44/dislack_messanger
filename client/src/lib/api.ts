@@ -1,4 +1,5 @@
 import { ERROR_MESSAGES } from "@/constants/errorMessages";
+import axios, { AxiosError } from "axios";
 
 const BASE_URL = process.env.REACT_APP_API_URL;
 
@@ -26,34 +27,34 @@ const fetcher = async (
   body?: any
 ) => {
   try {
-    const response = await fetch(BASE_URL + url, {
+    const response = await axios({
+      url: BASE_URL + url,
       method,
       headers: {
         "Content-Type": "application/json",
       },
-      ...(body && { body: JSON.stringify(body) }),
-      credentials: "include",
+      data: body,
+      params,
+      withCredentials: true,
     });
 
-    if (!response.ok) {
-      let errorResponse;
-      try {
-        errorResponse = await response.json();
-      } catch (e) {
-        throw new ApiError(response.status, 1010);
-      }
-      throw new ApiError(response.status, errorResponse.errorCode || 1010);
-    }
-
-    return response.json();
+    return response.data;
   } catch (err) {
-    if (err instanceof ApiError) {
-      throw err;
-    } else {
-      if (err instanceof Error) {
+    if (axios.isAxiosError(err)) {
+      if (err.response) {
+        // 서버가 응답했지만, 상태 코드가 200번대가 아닌 경우
+        let errorResponse = err.response.data;
+        throw new ApiError(
+          err.response.status,
+          errorResponse.errorCode || 1010
+        );
+      } else if (err.request) {
+        throw new ApiError(500, 1010, "서버로부터 응답이 없습니다.");
+      } else {
         throw new ApiError(500, 1010, err.message);
       }
-      throw new ApiError(500, 1010);
+    } else {
+      throw new ApiError(500, 1010, "예상치못한 에러가 발생했습니다.");
     }
   }
 };

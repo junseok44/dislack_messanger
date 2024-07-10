@@ -1,7 +1,7 @@
 import Navbar from "@/components/Navbar";
 import { API_ROUTE } from "@/constants/routeName";
 import { useAuth } from "@/contexts/AuthContext";
-import { api } from "@/lib/fetch";
+import { api } from "@/lib/api";
 import { useMutation } from "@tanstack/react-query";
 import React from "react";
 import { SubmitHandler, useForm } from "react-hook-form";

@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import tokenConfig, { getTokenCookieOption } from "../config/token";
 import { generateAccessToken } from "../utils/token";
+import { ERROR_CODES } from "../constants/errorCode";
 
 export const authenticateToken = async (
   req: Request,
@@ -12,7 +13,9 @@ export const authenticateToken = async (
   const refreshToken = req.cookies.refreshToken;
 
   if (!refreshToken) {
-    return res.sendStatus(401);
+    return res
+      .status(401)
+      .json({ message: "Unauthorized", errorCode: ERROR_CODES.UNAUTHORIZED });
   }
 
   jwt.verify(token, tokenConfig.jwtSecret!, (err, data) => {
@@ -20,13 +23,23 @@ export const authenticateToken = async (
       const refreshToken = req.cookies.refreshToken;
 
       if (!refreshToken) {
-        return res.sendStatus(401);
+        return res
+          .status(401)
+          .json({
+            message: "Unauthorized",
+            errorCode: ERROR_CODES.UNAUTHORIZED,
+          });
       }
 
       jwt.verify(refreshToken, tokenConfig.jwtRefreshSecret!, (err, data) => {
         if (err || !data.id) {
           // console.log("middleware/auth.ts: 리프레시 토큰이 유효하지 않습니다.");
-          return res.sendStatus(401);
+          return res
+            .status(401)
+            .json({
+              message: "Unauthorized",
+              errorCode: ERROR_CODES.UNAUTHORIZED,
+            });
         }
 
         // console.log(

@@ -1,8 +1,5 @@
-import { API_ROUTE, PAGE_ROUTE } from "@/constants/routeName";
+import { PAGE_ROUTE } from "@/constants/routeName";
 import { useAuth } from "@/contexts/AuthContext";
-import { api, ApiError } from "@/lib/fetch";
-import { useMutation } from "@tanstack/react-query";
-import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const Home = () => {

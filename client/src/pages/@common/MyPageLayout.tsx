@@ -1,5 +1,5 @@
 import React from "react";
-import Sidebar from "./Sidebar";
+import Sidebar from "../../components/ServerSelector";
 import { Outlet } from "react-router-dom";
 
 const MyPageLayout = () => {

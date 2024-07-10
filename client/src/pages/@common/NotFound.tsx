@@ -6,27 +6,22 @@ const NotFound = () => {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    navigate("/");
+    navigate(-1);
   };
 
   return (
-    <Box
-      display="flex"
-      alignItems="center"
-      justifyContent="center"
-      height="100vh"
-      bgGradient="linear(to-r, gray.300, yellow.400, pink.200)"
-    >
-      <VStack spacing={4}>
-        <Text fontSize="4xl" fontWeight="bold">
-          Page Not Found
-        </Text>
-        <Text fontSize="xl">The page you are looking for does not exist.</Text>
-        <Button onClick={handleClick} colorScheme="teal" size="lg" mt={4}>
-          Go to Home
-        </Button>
-      </VStack>
-    </Box>
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-gray-300 via-yellow-400 to-pink-200">
+      <div className="space-y-4 text-center">
+        <h1 className="text-4xl font-bold">Page Not Found</h1>
+        <p className="text-xl">The page you are looking for does not exist.</p>
+        <button
+          onClick={handleClick}
+          className="px-6 py-3 mt-4 text-lg text-white bg-teal-500 rounded-lg hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-opacity-75"
+        >
+          Go back
+        </button>
+      </div>
+    </div>
   );
 };
 

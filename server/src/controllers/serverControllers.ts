@@ -12,6 +12,13 @@ export const createServer = async (req: Request, res: Response) => {
       data: {
         name,
         ownerId: userId,
+        channels: {
+          create: {
+            name: "일반",
+            ownerId: userId,
+            protected: true,
+          },
+        },
       },
     });
     res.status(201).json(server);

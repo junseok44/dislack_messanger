@@ -1,6 +1,6 @@
 // src/contexts/AuthContext.tsx
 import { API_ROUTE } from "@/constants/routeName";
-import { api, ApiError } from "@/lib/fetch";
+import { api, ApiError } from "@/lib/api";
 import { useMutation } from "@tanstack/react-query";
 import {
   createContext,
@@ -13,6 +13,8 @@ import { useNavigate } from "react-router-dom";
 
 interface AuthContextType {
   user: User | null;
+  authLoading: boolean;
+  authError: boolean;
   login: (user: User) => void;
   logout: (redirectUrl?: string) => void;
 }
@@ -25,8 +27,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [pageLoading, setPageLoading] = useState<boolean>(true);
-  const [networkError, setNetworkError] = useState<boolean>(false);
+  const [authLoading, setAuthLoading] = useState<boolean>(true);
+  const [authError, setAuthError] = useState<boolean>(false);
 
   const navigate = useNavigate();
 
@@ -49,9 +51,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   });
 
   const { mutate: checkUser } = useMutation({
-    mutationFn: () => api.get(API_ROUTE.AUTH.CHECK, {}),
+    mutationFn: async () => {
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
+      return api.get(API_ROUTE.AUTH.CHECK, {});
+    },
     onMutate: () => {
-      setNetworkError(false);
+      setAuthError(false);
     },
     onError: (err) => {
       if (err instanceof ApiError) {
@@ -60,11 +66,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           return;
         }
 
-        setNetworkError(true);
+        setAuthError(true);
       }
     },
     onSettled: () => {
-      setPageLoading(false);
+      setAuthLoading(false);
     },
     onSuccess: (data: {
       user: {
@@ -72,7 +78,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       };
     }) => {
       login(data.user);
-      setNetworkError(false);
+      setAuthError(false);
     },
   });
 
@@ -81,18 +87,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
-      {pageLoading ? (
-        <div className="w-screen h-screen bg-background-dark">Loading...</div>
-      ) : networkError ? (
-        <div>
-          <h1>Network Error</h1>
-          <p>Check your network connection and try again</p>
-          <button onClick={() => checkUser()}>Retry</button>
-        </div>
-      ) : (
-        children
-      )}
+    <AuthContext.Provider
+      value={{ user, login, logout, authLoading, authError }}
+    >
+      {children}
     </AuthContext.Provider>
   );
 };
