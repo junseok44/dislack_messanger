@@ -19,9 +19,10 @@ import Container from "./Container";
 
 const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
-
   const { isOpen, onOpen, onClose } = useDisclosure();
+
   const { colorMode, toggleColorMode } = useColorMode();
+
   const bg = useColorModeValue("gray.100", "gray.900");
   const color = useColorModeValue("black", "white");
 

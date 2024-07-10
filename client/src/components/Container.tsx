@@ -7,7 +7,7 @@ const Container = ({ children }: { children: React.ReactNode }) => {
       mx="auto" // 수평 중앙 정렬
       width={{
         base: "100%", // 기본: 전체 너비
-        sm: "600px", // 30em 이상: 600px
+        sm: "100%", // 30em 이상: 600px
         md: "728px", // 48em 이상: 728px
         lg: "920px", // 62em 이상: 920px
         xl: "1400px", // 80em 이상: 1400px

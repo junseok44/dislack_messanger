@@ -1,0 +1,8 @@
+-- AlterTable
+ALTER TABLE `Channel` ADD COLUMN `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3);
+
+-- AlterTable
+ALTER TABLE `Message` ADD COLUMN `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3);
+
+-- AddForeignKey
+ALTER TABLE `LastSeenMessageOnChannel` ADD CONSTRAINT `LastSeenMessageOnChannel_channelId_fkey` FOREIGN KEY (`channelId`) REFERENCES `Channel`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;

@@ -59,60 +59,66 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <Stack minH={"100vh"} direction={"column"}>
-      <Navbar />
-      <Box bg={useColorModeValue("gray.50", "gray.800")} p={4} flexGrow={1}>
-        <VStack spacing={8} align="center" mt={10}>
-          <Heading as="h2" size="xl">
-            Login
-          </Heading>
-          {isError && <Text color="red.500">{error.message}</Text>}
-          <Box
-            as="form"
+    <div className="flex flex-col min-h-screen">
+      <header className="bg-gray-100 dark:bg-gray-900 p-4 shadow-md">
+        <Navbar />
+      </header>
+      <main className="flex-grow bg-gray-50 dark:bg-gray-800 p-4">
+        <div className="container mx-auto mt-10 flex flex-col items-center">
+          <h2 className="text-4xl font-bold mb-8">Login</h2>
+          {isError && <p className="text-red-500">{error.message}</p>}
+          <form
             onSubmit={handleSubmit(onSubmit)}
-            bg={useColorModeValue("white", "gray.700")}
-            p={8}
-            boxShadow="lg"
-            rounded="lg"
+            className="bg-white dark:bg-gray-700 p-8 shadow-lg rounded-lg w-full max-w-md"
           >
-            <VStack spacing={4}>
-              <FormControl id="username" isInvalid={Boolean(errors.username)}>
-                <FormLabel>Username</FormLabel>
-                <Input
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="username" className="block font-medium">
+                  Username
+                </label>
+                <input
                   id="username"
+                  className="mt-1 p-2 w-full border rounded-md text-black"
                   {...register("username", {
                     required: "Username is required",
                     minLength: { value: 3, message: "Username is too short" },
                     maxLength: { value: 50, message: "Username is too long" },
                   })}
                 />
-                <FormErrorMessage>
-                  {errors.username && errors.username.message}
-                </FormErrorMessage>
-              </FormControl>
-              <FormControl id="password" isInvalid={Boolean(errors.password)}>
-                <FormLabel>Password</FormLabel>
-                <Input
+                {errors.username && (
+                  <p className="text-red-500 mt-1">{errors.username.message}</p>
+                )}
+              </div>
+              <div>
+                <label htmlFor="password" className="block font-medium">
+                  Password
+                </label>
+                <input
                   id="password"
                   type="password"
+                  className="mt-1 p-2 w-full border rounded-md text-black"
                   {...register("password", {
                     required: "Password is required",
                     minLength: { value: 8, message: "Password is too short" },
                     maxLength: { value: 100, message: "Password is too long" },
                   })}
                 />
-                <FormErrorMessage>
-                  {errors.password && errors.password.message}
-                </FormErrorMessage>
-              </FormControl>
-              <Button type="submit" colorScheme="teal" isLoading={isSubmitting}>
-                Login
-              </Button>
-            </VStack>
-          </Box>
-        </VStack>
-      </Box>
-    </Stack>
+                {errors.password && (
+                  <p className="text-red-500 mt-1">{errors.password.message}</p>
+                )}
+              </div>
+              <button
+                type="submit"
+                className="mt-4 p-2 w-full bg-teal-500 text-white rounded-md"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Loading..." : "Login"}
+              </button>
+            </div>
+          </form>
+        </div>
+      </main>
+    </div>
   );
 };
 

@@ -1,24 +1,23 @@
-import React from "react";
-import { useForm, SubmitHandler } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
 import Navbar from "@/components/Navbar";
-import { api } from "@/lib/fetch";
-import { useMutation } from "@tanstack/react-query";
 import { API_ROUTE } from "@/constants/routeName";
+import { api } from "@/lib/fetch";
 import {
   Box,
   Button,
   FormControl,
-  FormLabel,
-  Input,
   FormErrorMessage,
+  FormLabel,
   Heading,
+  Input,
+  Stack,
+  Text,
   VStack,
   useColorModeValue,
-  Text,
-  Stack,
 } from "@chakra-ui/react";
+import { useMutation } from "@tanstack/react-query";
+import React from "react";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 
 interface RegisterFormInputs {
   username: string;
@@ -60,28 +59,26 @@ const RegisterPage: React.FC = () => {
   const password = watch("password");
 
   return (
-    <Stack minH={"100vh"} direction={"column"}>
-      <Navbar />
-      <Box bg={useColorModeValue("gray.50", "gray.800")} p={4} flexGrow={1}>
-        <VStack spacing={8} align="center" mt={10}>
-          <Heading as="h2" size="xl">
-            Register
-          </Heading>
-          {isError && <Text color="red.500">{error?.message}</Text>}
-
-          <Box
-            as="form"
+    <div className="flex flex-col min-h-screen">
+      <header className="bg-gray-100 dark:bg-gray-900 p-4 shadow-md">
+        <Navbar />
+      </header>
+      <main className="flex-grow bg-gray-50 dark:bg-gray-800 p-4">
+        <div className="container mx-auto mt-10 flex flex-col items-center">
+          <h2 className="text-4xl font-bold mb-8">Register</h2>
+          {isError && <p className="text-red-500">{error?.message}</p>}
+          <form
             onSubmit={handleSubmit(onSubmit)}
-            bg={useColorModeValue("white", "gray.700")}
-            p={8}
-            boxShadow="lg"
-            rounded="lg"
+            className="bg-white dark:bg-gray-700 p-8 shadow-lg rounded-lg w-full max-w-md"
           >
-            <VStack spacing={4}>
-              <FormControl id="username" isInvalid={Boolean(errors.username)}>
-                <FormLabel>Username</FormLabel>
-                <Input
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="username" className="block font-medium">
+                  Username
+                </label>
+                <input
                   id="username"
+                  className="mt-1 p-2 w-full border rounded-md text-black"
                   {...register("username", {
                     required: "Username is required",
                     minLength: {
@@ -94,15 +91,18 @@ const RegisterPage: React.FC = () => {
                     },
                   })}
                 />
-                <FormErrorMessage>
-                  {errors.username && errors.username.message}
-                </FormErrorMessage>
-              </FormControl>
-              <FormControl id="password" isInvalid={Boolean(errors.password)}>
-                <FormLabel>Password</FormLabel>
-                <Input
+                {errors.username && (
+                  <p className="text-red-500 mt-1">{errors.username.message}</p>
+                )}
+              </div>
+              <div>
+                <label htmlFor="password" className="block font-medium">
+                  Password
+                </label>
+                <input
                   id="password"
                   type="password"
+                  className="mt-1 p-2 w-full border rounded-md text-black"
                   {...register("password", {
                     required: "Password is required",
                     minLength: {
@@ -115,36 +115,42 @@ const RegisterPage: React.FC = () => {
                     },
                   })}
                 />
-                <FormErrorMessage>
-                  {errors.password && errors.password.message}
-                </FormErrorMessage>
-              </FormControl>
-              <FormControl
-                id="confirmPassword"
-                isInvalid={Boolean(errors.confirmPassword)}
-              >
-                <FormLabel>Confirm Password</FormLabel>
-                <Input
+                {errors.password && (
+                  <p className="text-red-500 mt-1">{errors.password.message}</p>
+                )}
+              </div>
+              <div>
+                <label htmlFor="confirmPassword" className="block font-medium">
+                  Confirm Password
+                </label>
+                <input
                   id="confirmPassword"
                   type="password"
+                  className="mt-1 p-2 w-full border rounded-md text-black"
                   {...register("confirmPassword", {
                     required: "Please confirm your password",
                     validate: (value) =>
                       value === password || "Passwords do not match",
                   })}
                 />
-                <FormErrorMessage>
-                  {errors.confirmPassword && errors.confirmPassword.message}
-                </FormErrorMessage>
-              </FormControl>
-              <Button type="submit" colorScheme="teal" isLoading={isSubmitting}>
-                Register
-              </Button>
-            </VStack>
-          </Box>
-        </VStack>
-      </Box>
-    </Stack>
+                {errors.confirmPassword && (
+                  <p className="text-red-500 mt-1">
+                    {errors.confirmPassword.message}
+                  </p>
+                )}
+              </div>
+              <button
+                type="submit"
+                className="mt-4 p-2 w-full bg-teal-500 text-white rounded-md"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Loading..." : "Register"}
+              </button>
+            </div>
+          </form>
+        </div>
+      </main>
+    </div>
   );
 };
 

@@ -4,10 +4,10 @@ import { api, ApiError } from "@/lib/fetch";
 import { useMutation } from "@tanstack/react-query";
 import {
   createContext,
-  useContext,
-  useState,
   ReactNode,
+  useContext,
   useEffect,
+  useState,
 } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -25,6 +25,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [pageLoading, setPageLoading] = useState<boolean>(true);
   const [networkError, setNetworkError] = useState<boolean>(false);
 
   const navigate = useNavigate();
@@ -47,20 +48,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     },
   });
 
-  const { mutate: checkUser, isPending } = useMutation({
+  const { mutate: checkUser } = useMutation({
     mutationFn: () => api.get(API_ROUTE.CHECK, {}),
     onMutate: () => {
       setNetworkError(false);
     },
     onError: (err) => {
       if (err instanceof ApiError) {
-        if (err.statusCode === 401) {
+        if (err.statusCode === 403 || err.statusCode === 401) {
           logout();
           return;
         }
 
         setNetworkError(true);
       }
+    },
+    onSettled: () => {
+      setPageLoading(false);
     },
     onSuccess: (data: {
       user: {
@@ -78,7 +82,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AuthContext.Provider value={{ user, login, logout }}>
-      {networkError ? (
+      {pageLoading ? (
+        <div className="w-screen h-screen bg-background-dark">Loading...</div>
+      ) : networkError ? (
         <div>
           <h1>Network Error</h1>
           <p>Check your network connection and try again</p>

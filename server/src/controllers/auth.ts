@@ -27,6 +27,15 @@ export const register = async (req: RequestWithUser, res: Response) => {
     res.status(201).json({ message: "User registered successfully" });
   } catch (error) {
     console.log(error);
+
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({
+        errorCode: ERROR_CODES.INVALID_FORM,
+        message: "Invalid request",
+        details: error.errors,
+      });
+    }
+
     res.status(500).json({
       errorCode: ERROR_CODES.INTERNAL_SERVER_ERROR,
       message: "Internal Server Error",
@@ -74,6 +83,16 @@ export const login = async (req: RequestWithUser, res: Response) => {
       },
     });
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({
+        errorCode: ERROR_CODES.INVALID_FORM,
+        message: "Invalid request",
+        details: error.errors,
+      });
+    }
+
+    console.log(error);
+
     res.status(500).json({
       errorCode: ERROR_CODES.INTERNAL_SERVER_ERROR,
       message: "Internal Server Error",
