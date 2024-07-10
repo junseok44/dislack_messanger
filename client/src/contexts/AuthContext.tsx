@@ -41,7 +41,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const { mutate: logoutAndRedirect } = useMutation({
-    mutationFn: (redirectUrl?: string) => api.post(API_ROUTE.LOGOUT, {}),
+    mutationFn: (redirectUrl?: string) => api.post(API_ROUTE.AUTH.LOGOUT, {}),
     onSuccess: (_, redirectUrl) => {
       setUser(null);
       if (redirectUrl) navigate(redirectUrl);
@@ -49,7 +49,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   });
 
   const { mutate: checkUser } = useMutation({
-    mutationFn: () => api.get(API_ROUTE.CHECK, {}),
+    mutationFn: () => api.get(API_ROUTE.AUTH.CHECK, {}),
     onMutate: () => {
       setNetworkError(false);
     },

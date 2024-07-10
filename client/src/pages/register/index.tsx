@@ -1,19 +1,6 @@
 import Navbar from "@/components/Navbar";
 import { API_ROUTE } from "@/constants/routeName";
 import { api } from "@/lib/fetch";
-import {
-  Box,
-  Button,
-  FormControl,
-  FormErrorMessage,
-  FormLabel,
-  Heading,
-  Input,
-  Stack,
-  Text,
-  VStack,
-  useColorModeValue,
-} from "@chakra-ui/react";
 import { useMutation } from "@tanstack/react-query";
 import React from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
@@ -43,7 +30,7 @@ const RegisterPage: React.FC = () => {
     isSuccess,
   } = useMutation({
     mutationFn: (data: { username: string; password: string }) =>
-      api.post(API_ROUTE.REGISTER, data),
+      api.post(API_ROUTE.AUTH.REGISTER, data),
     onSuccess: () => {
       reset();
       navigate("/login");

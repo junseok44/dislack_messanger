@@ -6,8 +6,10 @@ dotenv.config();
 
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
-import authRoutes from "./routes/auth";
+import authRoutes from "./routes/authRoutes";
 import tokenConfig from "./config/token";
+import channelRoutes from "./routes/channelRoutes";
+import serverRoutes from "./routes/serverRoutes";
 
 const app = express();
 
@@ -22,6 +24,8 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 
 app.use("/auth", authRoutes);
+app.use("/channel", channelRoutes);
+app.use("/server", serverRoutes);
 
 app.get("/", (req, res) => {
   res.send("Hello World");

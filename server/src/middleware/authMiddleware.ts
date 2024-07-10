@@ -1,11 +1,10 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import tokenConfig, { getTokenCookieOption } from "../config/token";
-import { RequestWithUser } from "../@types/express";
 import { generateAccessToken } from "../utils/token";
 
 export const authenticateToken = async (
-  req: RequestWithUser,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {

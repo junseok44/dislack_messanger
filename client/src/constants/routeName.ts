@@ -15,11 +15,20 @@ export const PAGE_ROUTE = {
 };
 
 export const API_ROUTE = {
-  REGISTER: "/auth/register",
-  LOGIN: "/auth/login",
-  CHECK: "/auth/check",
-  LOGOUT: "/auth/logout",
-  CHANNELS: {
-    GET_ALL: "/channels",
+  AUTH: {
+    REGISTER: "/auth/register",
+    LOGIN: "/auth/login",
+    CHECK: "/auth/check",
+    REFRESH_TOKEN: "/auth/refresh-token",
+    LOGOUT: "/auth/logout",
+  },
+  SERVER: {
+    CREATE: "/server/",
+    DELETE: (id: number | string) => `/server/${id}`,
+    GET_USER_SERVERS_WITH_CHANNELS: "/server/user",
+  },
+  CHANNEL: {
+    CREATE: "/channel/",
+    DELETE: (id: number | string) => `/channel/${id}`,
   },
 };

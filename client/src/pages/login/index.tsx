@@ -5,19 +5,6 @@ import { api } from "@/lib/fetch";
 import { useMutation } from "@tanstack/react-query";
 import React from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
-import {
-  Box,
-  Button,
-  FormControl,
-  FormLabel,
-  Input,
-  FormErrorMessage,
-  Heading,
-  VStack,
-  useColorModeValue,
-  Text,
-  Stack,
-} from "@chakra-ui/react";
 
 interface LoginFormInputs {
   username: string;
@@ -44,7 +31,7 @@ const LoginPage: React.FC = () => {
     error,
   } = useMutation({
     mutationFn: (data: { username: string; password: string }) =>
-      api.post(API_ROUTE.LOGIN, data),
+      api.post(API_ROUTE.AUTH.LOGIN, data),
 
     onSuccess: (data) => {
       login(data.user);

@@ -6,14 +6,13 @@ import tokenConfig, { getTokenCookieOption } from "../config/token";
 import { generateAccessToken, generateRefreshToken } from "../utils/token";
 import { z } from "zod";
 import { ERROR_CODES } from "../constants/errorCode";
-import { RequestWithUser } from "../@types/express";
 
 const userSchema = z.object({
   username: z.string().min(3).max(50),
   password: z.string().min(8).max(100),
 });
 
-export const register = async (req: RequestWithUser, res: Response) => {
+export const register = async (req: Request, res: Response) => {
   try {
     userSchema.parse(req.body);
 
@@ -43,7 +42,7 @@ export const register = async (req: RequestWithUser, res: Response) => {
   }
 };
 
-export const login = async (req: RequestWithUser, res: Response) => {
+export const login = async (req: Request, res: Response) => {
   try {
     userSchema.parse(req.body);
 
@@ -100,7 +99,7 @@ export const login = async (req: RequestWithUser, res: Response) => {
   }
 };
 
-export const refreshToken = async (req: RequestWithUser, res: Response) => {
+export const refreshToken = async (req: Request, res: Response) => {
   const refreshToken = req.cookies.refreshToken;
 
   if (!refreshToken)
@@ -140,7 +139,7 @@ export const refreshToken = async (req: RequestWithUser, res: Response) => {
   }
 };
 
-export const checkAuth = async (req: RequestWithUser, res: Response) => {
+export const checkAuth = async (req: Request, res: Response) => {
   if (!req.user) {
     return res.status(403).json({
       errorCode: ERROR_CODES.FORBIDDEN,
@@ -171,7 +170,7 @@ export const checkAuth = async (req: RequestWithUser, res: Response) => {
   }
 };
 
-export const logout = (req: RequestWithUser, res: Response) => {
+export const logout = (req: Request, res: Response) => {
   res.cookie("accessToken", "", {
     ...getTokenCookieOption("accessToken"),
     expires: new Date(0),
