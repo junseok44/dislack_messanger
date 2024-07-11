@@ -25,10 +25,22 @@ interface Message {
   channelId: number;
   authorId: number;
   createdAt: string;
+  isTemp?: boolean;
+}
+
+interface MessageWithAuthor extends Message {
+  author: {
+    id: number;
+    username: string;
+  };
+}
+
+interface CreateMessageResponse extends Omit<MessageWithAuthor, "isTemp"> {
+  tempId: number;
 }
 
 // fetchMessages 함수의 응답 타입 정의
 export interface getAllMessagesResponse {
-  messages: Message[];
+  messages: MessageWithAuthor[];
   nextCursor: number | null;
 }

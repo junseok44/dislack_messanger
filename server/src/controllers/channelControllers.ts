@@ -1,6 +1,9 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { ERROR_CODES } from "../constants/errorCode";
+import { getNamespace } from "../sockets";
+import { SOCKET_EVENTS, SOCKET_NAMESPACES } from "../constants/socket";
+import { delay } from "../utils/delay";
 
 const prisma = new PrismaClient();
 
@@ -90,6 +93,14 @@ export const getChannelMessages = async (req: Request, res: Response) => {
     skip: cursor ? 1 : 0, // cursor가 있다면 1개를 건너뜀
     cursor: cursor ? { id: Number(cursor) } : undefined,
     orderBy: { createdAt: "desc" },
+    include: {
+      author: {
+        select: {
+          id: true,
+          username: true,
+        },
+      },
+    },
   });
 
   const nextCursor =
@@ -103,7 +114,8 @@ export const getChannelMessages = async (req: Request, res: Response) => {
 
 export const createMessage = async (req: Request, res: Response) => {
   const { channelId } = req.params;
-  const { content, authorId } = req.body;
+  const { content, tempId } = req.body;
+  const { id: authorId } = req.user;
 
   try {
     const newMessage = await prisma.message.create({
@@ -112,7 +124,20 @@ export const createMessage = async (req: Request, res: Response) => {
         channelId: Number(channelId),
         authorId: Number(authorId),
       },
+      include: {
+        author: true,
+      },
     });
+
+    // for test purpose.
+    // await delay(1000);
+    // throw new Error("Failed to create message");
+
+    const channelsNamespace = getNamespace(SOCKET_NAMESPACES.CHANNELS);
+    channelsNamespace
+      .to(channelId)
+      .emit(SOCKET_EVENTS.NEW_MESSAGE, { ...newMessage, tempId });
+
     res.json(newMessage);
   } catch (error) {
     res.status(500).json({ error: "Failed to create message" });

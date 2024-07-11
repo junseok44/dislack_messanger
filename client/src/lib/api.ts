@@ -1,5 +1,5 @@
 import { ERROR_MESSAGES } from "@/constants/errorMessages";
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 
 const BASE_URL = process.env.REACT_APP_API_URL;
 

@@ -14,14 +14,14 @@ export const fetchMessages = async (
 export const sendMessage = async ({
   channelId,
   content,
-  authorId,
+  tempId,
 }: {
   channelId: number;
   content: string;
-  authorId: number;
+  tempId: number;
 }) => {
   return api.post(API_ROUTE.MESSAGES.POST(channelId), {
     content,
-    authorId,
+    tempId,
   });
 };

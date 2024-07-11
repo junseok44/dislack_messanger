@@ -1,10 +1,19 @@
-import { PAGE_ROUTE } from "@/constants/routeName";
-import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import ChannelSideBar from "./components/ChannelSideBar";
-import { useMessages, useSendMessage } from "./hooks";
-import { useGetUserServersWithChannels } from "@/hooks/useUserServerWithChannels";
+import { API_ROUTE, PAGE_ROUTE } from "@/constants/routeName";
+import { SOCKET_EVENTS, SOCKET_NAMESPACES } from "@/constants/sockets";
 import useAutoScroll from "@/hooks/useAutoScroll";
+import { useGetUserServersWithChannels } from "@/hooks/useUserServerWithChannels";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { io } from "socket.io-client";
+import ChannelSideBar from "./components/ChannelSideBar";
+import { useChannelSocket, useMessages, useSendMessage } from "./hooks";
+import { InfiniteData, useQueryClient } from "@tanstack/react-query";
+import { produce } from "immer";
+import { CreateMessageResponse, Message } from "@/@types";
+
+const socket = io(
+  process.env.REACT_APP_API_URL + SOCKET_NAMESPACES.CHANNELS || ""
+);
 
 const Channel = () => {
   const allServers = useGetUserServersWithChannels();
@@ -33,7 +42,9 @@ const Channel = () => {
     allMessages.length,
   ]);
 
-  if (!serverId || !channelId) {
+  useChannelSocket(socket, channelId, parsedChannelId);
+
+  if (!serverId || !parsedChannelId) {
     return <div>loading...</div>;
   }
 
@@ -53,7 +64,7 @@ const Channel = () => {
 
   const currentChannel = allServers
     ?.find((server) => server.id === parseInt(serverId))
-    ?.channels.find((channel) => channel.id === parseInt(channelId));
+    ?.channels.find((channel) => channel.id === parsedChannelId);
 
   if (!currentChannel) {
     return <div>channel not found...</div>;
@@ -64,7 +75,7 @@ const Channel = () => {
     sendMessage({
       channelId: parsedChannelId!,
       content: messageContent,
-      authorId: 1,
+      tempId: Math.random(),
     });
     setMessageContent("");
   };
@@ -75,6 +86,8 @@ const Channel = () => {
     scrollToBottom();
   };
 
+  console.log(allMessages[0]);
+
   return (
     <div className="flex-grow h-full flex max-h-screen">
       <ChannelSideBar channels={channels} onClickChannels={onClickChannels} />
@@ -82,8 +95,11 @@ const Channel = () => {
         <div className="flex flex-col h-full">
           <ul className="flex-grow overflow-auto">
             {allMessages?.map((message) => (
-              <li key={message.id}>
-                {message.content} {message.id}
+              <li
+                key={message.id}
+                className={`${message.isTemp ? `text-warning-light` : ``}`}
+              >
+                {message.author.username} : {message.content}
               </li>
             ))}
             <div ref={listEndRef} />

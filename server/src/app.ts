@@ -10,6 +10,8 @@ import authRoutes from "./routes/authRoutes";
 import tokenConfig from "./config/token";
 import channelRoutes from "./routes/channelRoutes";
 import serverRoutes from "./routes/serverRoutes";
+import { initializeSocket } from "./sockets";
+import http from "http";
 
 const app = express();
 
@@ -23,8 +25,12 @@ app.use(
 app.use(bodyParser.json());
 app.use(cookieParser());
 
+const server = http.createServer(app);
+
+initializeSocket(server);
+
 app.use("/auth", authRoutes);
-app.use("/channel", channelRoutes);
+app.use("/channels", channelRoutes);
 app.use("/server", serverRoutes);
 
 app.get("/", (req, res) => {
@@ -35,6 +41,6 @@ if (!tokenConfig.jwtSecret || !tokenConfig.jwtRefreshSecret) {
   throw new Error("JWT Secret not provided");
 }
 
-app.listen(process.env.SERVER_PORT, () => {
+server.listen(process.env.SERVER_PORT, () => {
   console.log(`Server running on port ${process.env.SERVER_PORT}`);
 });

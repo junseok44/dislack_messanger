@@ -29,11 +29,11 @@ export const API_ROUTE = {
   },
   CHANNEL: {
     CREATE: "/channel",
-    DELETE: (id: number | string) => `/channel/${id}`,
+    DELETE: (id: number | string) => `/channels/${id}`,
   },
   MESSAGES: {
-    GET: (channelId: number | string) => `/channel/${channelId}/messages`,
-    POST: (channelId: number | string) => `/channel/${channelId}/messages`,
+    GET: (channelId: number | string) => `/channels/${channelId}/messages`,
+    POST: (channelId: number | string) => `/channels/${channelId}/messages`,
     // JOIN: (channelId: number | string) => `/channel/${channelId}/join`,
   },
 };

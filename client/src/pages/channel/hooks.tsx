@@ -1,4 +1,9 @@
-import { getAllMessagesResponse, Message } from "@/@types";
+import {
+  CreateMessageResponse,
+  getAllMessagesResponse,
+  Message,
+  MessageWithAuthor,
+} from "@/@types";
 import { API_ROUTE } from "@/constants/routeName";
 import { ApiError } from "@/lib/api";
 import {
@@ -10,6 +15,10 @@ import {
 } from "@tanstack/react-query";
 import { fetchMessages, sendMessage } from "./fetcher";
 import { produce } from "immer";
+import { useEffect } from "react";
+import { SOCKET_EVENTS } from "@/constants/sockets";
+import { Socket } from "socket.io-client";
+import { useAuth } from "@/contexts/AuthContext";
 
 export const useMessages = (channelId: number | undefined) => {
   return useInfiniteQuery<
@@ -43,10 +52,12 @@ export const useMessages = (channelId: number | undefined) => {
 export const useSendMessage = () => {
   const queryClient = useQueryClient();
 
+  const { user } = useAuth();
+
   return useMutation<
     Message,
     ApiError,
-    { channelId: number; content: string; authorId: number },
+    { channelId: number; content: string; tempId: number },
     {
       previousMessages:
         | InfiniteData<{
@@ -54,20 +65,21 @@ export const useSendMessage = () => {
             nextCursor: number | null;
           }>
         | undefined;
-      testId: number;
+      tempId: number;
     }
   >({
     mutationFn: sendMessage,
     onMutate: async (newMessage) => {
-      const { channelId } = newMessage;
+      const { channelId, tempId } = newMessage;
       await queryClient.cancelQueries({
         queryKey: [API_ROUTE.MESSAGES.GET(channelId), channelId],
       });
 
-      let testId = Date.now();
-
       const previousMessages = queryClient.getQueryData<
-        InfiniteData<{ messages: Message[]; nextCursor: number | null }>
+        InfiniteData<{
+          messages: MessageWithAuthor[];
+          nextCursor: number | null;
+        }>
       >([API_ROUTE.MESSAGES.GET(channelId), channelId]);
 
       if (previousMessages) {
@@ -78,8 +90,14 @@ export const useSendMessage = () => {
               if (index === 0) {
                 page.messages.unshift({
                   ...newMessage,
-                  id: testId,
+                  id: tempId,
                   createdAt: new Date().toISOString(),
+                  isTemp: true,
+                  authorId: tempId,
+                  author: {
+                    id: tempId,
+                    username: user?.username || "temp",
+                  },
                 });
               }
             });
@@ -87,42 +105,84 @@ export const useSendMessage = () => {
         );
       }
 
-      return { previousMessages, testId };
+      return { previousMessages, tempId };
     },
-    onSuccess: (newMessage, variables, context) => {
-      const { channelId } = variables;
-      const { testId } = context;
-
-      const previousMessages = queryClient.getQueryData<
-        InfiniteData<{ messages: Message[]; nextCursor: number | null }>
-      >([API_ROUTE.MESSAGES.GET(channelId), channelId]);
-
-      if (previousMessages) {
+    onError: (err, newMessage, context) => {
+      const { channelId } = newMessage;
+      if (context?.previousMessages) {
         queryClient.setQueryData(
           [API_ROUTE.MESSAGES.GET(channelId), channelId],
-          produce(previousMessages, (draft) => {
-            draft.pages.forEach((page) => {
-              page.messages = page.messages.map((message) =>
-                message.id === testId ? { ...newMessage } : message
-              );
+          produce(context.previousMessages, (draft) => {
+            draft.pages.forEach((page, index) => {
+              if (index === 0) {
+                // FIXME 이 부분 문제 생길수도.
+                page.messages = page.messages.filter((message) => {
+                  return message.isTemp !== true;
+                });
+              }
             });
           })
         );
       }
     },
-    onError: (err, newMessage, context) => {
-      console.log(err);
-
-      console.log(context?.previousMessages);
-
-      const { channelId } = newMessage;
-      if (context?.previousMessages) {
-        queryClient.setQueryData(
-          [API_ROUTE.MESSAGES.GET(channelId), channelId],
-          context.previousMessages
-        );
-      }
-    },
     onSettled: (newMessage, error, variables) => {},
   });
+};
+
+export const useChannelSocket = (
+  socket: Socket,
+  channelId: string | undefined,
+  parsedChannelId: number | undefined
+) => {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (!parsedChannelId) {
+      console.log("No parsedChannelId provided");
+      return;
+    }
+
+    socket.emit(SOCKET_EVENTS.JOIN_CHANNEL, channelId);
+
+    const handleNewMessage = (newMessage: CreateMessageResponse) => {
+      const queryKey = [
+        API_ROUTE.MESSAGES.GET(parsedChannelId),
+        parsedChannelId,
+      ];
+
+      const previousMessages =
+        queryClient.getQueryData<
+          InfiniteData<{ messages: Message[]; nextCursor: number | null }>
+        >(queryKey);
+
+      if (previousMessages) {
+        queryClient.setQueryData(
+          queryKey,
+          produce(previousMessages, (draft) => {
+            draft.pages.forEach((page, index) => {
+              if (index === 0) {
+                const existingMessageIndex = page.messages.findIndex(
+                  (message) => message.id == newMessage.tempId
+                );
+
+                if (existingMessageIndex !== -1) {
+                  page.messages[existingMessageIndex] = newMessage;
+                } else {
+                  page.messages.unshift(newMessage);
+                }
+              }
+            });
+          })
+        );
+      }
+    };
+
+    socket.on(SOCKET_EVENTS.NEW_MESSAGE, handleNewMessage);
+
+    return () => {
+      console.log("Leaving channel:", parsedChannelId);
+      socket.emit(SOCKET_EVENTS.LEAVE_CHANNEL, parsedChannelId);
+      socket.off(SOCKET_EVENTS.NEW_MESSAGE, handleNewMessage);
+    };
+  }, [channelId, queryClient]);
 };
