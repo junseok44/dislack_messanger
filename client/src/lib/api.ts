@@ -34,7 +34,7 @@ const fetcher = async (
         "Content-Type": "application/json",
       },
       data: body,
-      params,
+      ...params,
       withCredentials: true,
     });
 

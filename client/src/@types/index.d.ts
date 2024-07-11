@@ -18,3 +18,17 @@ export type getAllUserServersWithChannelsResponse = Pick<
   Server,
   "id" | "name" | "owner_id" | "channels"
 >[];
+
+interface Message {
+  id: number;
+  content: string;
+  channelId: number;
+  authorId: number;
+  createdAt: string;
+}
+
+// fetchMessages 함수의 응답 타입 정의
+export interface getAllMessagesResponse {
+  messages: Message[];
+  nextCursor: number | null;
+}

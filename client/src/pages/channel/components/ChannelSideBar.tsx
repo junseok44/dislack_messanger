@@ -1,6 +1,3 @@
-import { PAGE_ROUTE } from "@/constants/routeName";
-import { useNavigate, useParams } from "react-router-dom";
-import { useGetUserServersWithChannels } from "../hooks";
 import { Channel } from "@/@types";
 
 const ChannelSideBar = ({

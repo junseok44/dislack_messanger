@@ -1,8 +1,8 @@
 import React from "react";
 import { Outlet } from "react-router-dom";
-import { useUserServersWithChannels } from "../channel/hooks";
 import LoadingPage from "./LoadingPage";
 import ErrorPage from "./ErrorPage";
+import { useUserServersWithChannels } from "@/hooks/useUserServerWithChannels";
 
 const InitializeMainPage = () => {
   const { data, isLoading, isError } = useUserServersWithChannels();

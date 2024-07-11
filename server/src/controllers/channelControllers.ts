@@ -79,3 +79,42 @@ export const deleteChannel = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const getChannelMessages = async (req: Request, res: Response) => {
+  const { channelId } = req.params;
+  const { cursor, limit = 20 } = req.query;
+
+  const messages = await prisma.message.findMany({
+    where: { channelId: Number(channelId) },
+    take: Number(limit),
+    skip: cursor ? 1 : 0, // cursor가 있다면 1개를 건너뜀
+    cursor: cursor ? { id: Number(cursor) } : undefined,
+    orderBy: { createdAt: "desc" },
+  });
+
+  const nextCursor =
+    messages.length === Number(limit) ? messages[messages.length - 1].id : null;
+
+  res.json({
+    messages,
+    nextCursor,
+  });
+};
+
+export const createMessage = async (req: Request, res: Response) => {
+  const { channelId } = req.params;
+  const { content, authorId } = req.body;
+
+  try {
+    const newMessage = await prisma.message.create({
+      data: {
+        content,
+        channelId: Number(channelId),
+        authorId: Number(authorId),
+      },
+    });
+    res.json(newMessage);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to create message" });
+  }
+};

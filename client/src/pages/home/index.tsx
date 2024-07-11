@@ -1,5 +1,6 @@
 import { PAGE_ROUTE } from "@/constants/routeName";
 import { useAuth } from "@/contexts/AuthContext";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const Home = () => {
@@ -7,9 +8,9 @@ const Home = () => {
 
   const navigate = useNavigate();
 
-  // useEffect(() => {
-  //   navigate(PAGE_ROUTE.CHANNELS_ME);
-  // }, []);
+  useEffect(() => {
+    navigate(PAGE_ROUTE.CHANNELS_ME);
+  }, []);
 
   const onClick = () => {
     navigate(PAGE_ROUTE.CHANNELS_ME);

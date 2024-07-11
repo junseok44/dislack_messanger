@@ -7,7 +7,10 @@ export const ROUTES = {
   CHANNEL: {
     CREATE: "/",
     DELETE: "/:id",
+    MESSAGES: "/:channelId/messages",
+    CREATE_MESSAGE: "/:channelId/messages",
   },
+
   AUTH: {
     REGISTER: "/register",
     LOGIN: "/login",
