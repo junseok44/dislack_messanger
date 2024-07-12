@@ -7,8 +7,17 @@ import React, {
   ReactNode,
 } from "react";
 
+interface ShowModalOptions {
+  title: string;
+  text?: string;
+  onConfirm?: () => void;
+  onRequestClose?: () => void;
+  children?: ReactNode;
+  showControls?: boolean;
+}
+
 interface ModalContextType {
-  showModal: (title: string, text: string, onConfirm: () => void) => void;
+  showModal: (options: ShowModalOptions) => void;
   closeModal: () => void;
 }
 
@@ -25,22 +34,38 @@ export const ModalProvider: React.FC<ModalProviderProps> = ({ children }) => {
   const [modalState, setModalState] = useState<{
     isOpen: boolean;
     title: string;
-    text: string;
-    onConfirm: () => void;
+    text?: string;
+    onConfirm?: () => void;
+    onRequestClose?: () => void;
+    children?: ReactNode;
+    showControls?: boolean;
   }>({
     isOpen: false,
     title: "",
     text: "",
-    onConfirm: () => {},
+    onConfirm: undefined,
+    onRequestClose: undefined,
+    children: null,
+    showControls: true,
   });
 
   const showModal = useCallback(
-    (title: string, text: string, onConfirm: () => void) => {
+    ({
+      title,
+      text,
+      onConfirm,
+      onRequestClose,
+      children,
+      showControls,
+    }: ShowModalOptions) => {
       setModalState({
         isOpen: true,
         title,
         text,
         onConfirm,
+        onRequestClose,
+        children,
+        showControls,
       });
     },
     []
@@ -60,9 +85,12 @@ export const ModalProvider: React.FC<ModalProviderProps> = ({ children }) => {
         isOpen={modalState.isOpen}
         title={modalState.title}
         text={modalState.text}
+        showControls={modalState.showControls}
         onConfirm={modalState.onConfirm}
-        onRequestClose={closeModal}
-      />
+        onRequestClose={modalState.onRequestClose || closeModal}
+      >
+        {modalState.children}
+      </CommonModal>
     </ModalContext.Provider>
   );
 };

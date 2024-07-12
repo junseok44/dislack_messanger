@@ -34,6 +34,8 @@ model Server {
   owner   User    @relation("owner", fields: [ownerId], references: [id])
   
   members User[] @relation("members")
+  inviteCode String @unique @default(cuid())
+
   channels Channel[]
 
 }

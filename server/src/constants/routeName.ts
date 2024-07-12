@@ -3,6 +3,7 @@ export const ROUTES = {
     CREATE: "/",
     DELETE: "/:id",
     GET_USER_SERVERS_WITH_CHANNELS: "/user",
+    JOIN: "/join",
   },
   CHANNEL: {
     CREATE: "/",

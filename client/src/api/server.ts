@@ -1,6 +1,10 @@
 import { API_ROUTE } from "@/constants/routeName";
 import { api } from "@/lib/api";
 
+export const joinServer = async ({ inviteCode }: { inviteCode: string }) => {
+  return await api.post(API_ROUTE.SERVER.JOIN, { inviteCode });
+};
+
 export const createServer = async (name: string) => {
   return await api.post(API_ROUTE.SERVER.CREATE, { name });
 };

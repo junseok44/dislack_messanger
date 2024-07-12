@@ -9,31 +9,30 @@ const ChannelSideBar = ({
   onClickChannels,
 }: {
   channels: Channel[];
-  server: Pick<Server, "id" | "name">;
+  server: Pick<Server, "id" | "name" | "inviteCode">;
   onClickChannels: (channelId: number) => void;
 }) => {
   const { mutate } = useDeleteServer();
 
-  const {
-    showModal: showDeleteServerModal,
-    closeModal: closeDeleteServerModal,
-  } = useModal();
+  const { showModal, closeModal } = useModal();
 
   const onClickDeleteServer = (id: number) => {
-    showDeleteServerModal(
-      "서버 삭제",
-      "정말로 서버를 삭제하시겠습니까?\n모든 데이터가 다 날아갑니다!!",
-      () => {
+    showModal({
+      title: "Delete Server",
+      text: "Are you sure you want to delete this server?",
+      showControls: true,
+      onConfirm: () => {
         mutate(id);
-        closeDeleteServerModal();
-      }
-    );
+        closeModal();
+      },
+    });
   };
 
   return (
     <div className="w-60 bg-secondary-dark h-full">
       <div>
         <div>{server.name}</div>
+        <div>{server.inviteCode}</div>
       </div>
       <button
         onClick={() => {

@@ -25,6 +25,8 @@ export const createServer = async (req: Request, res: Response) => {
     });
     res.status(201).json(server);
   } catch (error) {
+    console.log(error);
+
     res.status(500).json({
       errorCode: ERROR_CODES.INTERNAL_SERVER_ERROR,
       message: "Internal Server Error",
@@ -70,6 +72,44 @@ export const deleteServer = async (req: Request, res: Response) => {
   }
 };
 
+export const joinServer = async (req: Request, res: Response) => {
+  const { inviteCode } = req.body;
+  const { id: userId } = req.user;
+
+  try {
+    const server = await prisma.server.findUnique({
+      where: { inviteCode },
+    });
+
+    if (!server) {
+      return res.status(404).json({
+        message: "Server not found",
+        errorCode: ERROR_CODES.SERVER_NOT_FOUND,
+      });
+    }
+
+    const newServer = await prisma.server.update({
+      where: { id: server.id },
+      data: {
+        members: {
+          connect: { id: userId },
+        },
+      },
+      include: {
+        channels: true,
+      },
+    });
+
+    res.json(newServer);
+  } catch (error) {
+    console.error("Failed to join server:", error);
+    res.status(500).json({
+      message: "Failed to join server",
+      errorCode: ERROR_CODES.INTERNAL_SERVER_ERROR,
+    });
+  }
+};
+
 export const getUserServersWithChannels = async (
   req: Request,
   res: Response
@@ -88,6 +128,8 @@ export const getUserServersWithChannels = async (
 
     res.status(200).json(servers);
   } catch (error) {
+    console.log(error);
+
     res.status(500).json({
       errorCode: ERROR_CODES.INTERNAL_SERVER_ERROR,
       message: "Internal Server Error",

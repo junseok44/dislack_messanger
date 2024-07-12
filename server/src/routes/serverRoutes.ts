@@ -3,6 +3,7 @@ import {
   createServer,
   deleteServer,
   getUserServersWithChannels,
+  joinServer,
 } from "../controllers/serverControllers";
 import { authenticateToken } from "../middleware/authMiddleware";
 import { ROUTES } from "../constants/routeName";
@@ -16,5 +17,6 @@ router.get(
   authenticateToken,
   getUserServersWithChannels
 );
+router.post(ROUTES.SERVER.JOIN, authenticateToken, joinServer);
 
 export default router;

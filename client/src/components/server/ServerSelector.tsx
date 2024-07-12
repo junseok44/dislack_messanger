@@ -6,6 +6,9 @@ import {
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import CreateServerModal from "./CreateServerModal";
+import { useModal } from "@/contexts/ModalContext";
+import InviteServerForm from "./InviteServerModal";
+import CreateServerForm from "./CreateServerModal";
 
 const SidebarButton = ({
   icon,
@@ -39,8 +42,6 @@ const SidebarButton = ({
 const Sidebar = () => {
   const navigate = useNavigate();
 
-  const [isModalOpen, setModalOpen] = useState(false);
-
   const onClickMyPage = () => {
     navigate(PAGE_ROUTE.CHANNELS_ME);
   };
@@ -51,8 +52,22 @@ const Sidebar = () => {
 
   const { data } = useUserServersWithChannels();
 
-  const onClickAddServer = () => {
-    setModalOpen(true);
+  const { showModal } = useModal();
+
+  const openCreateServerModal = () => {
+    showModal({
+      title: "서버 만들기",
+      text: "",
+      children: <CreateServerForm />,
+    });
+  };
+
+  const openInviteServerModal = () => {
+    showModal({
+      title: "초대코드 입력",
+      text: "",
+      children: <InviteServerForm />,
+    });
   };
 
   return (
@@ -62,11 +77,6 @@ const Sidebar = () => {
         text="홈"
         onClick={onClickMyPage}
       ></SidebarButton>
-
-      <CreateServerModal
-        isOpen={isModalOpen}
-        onRequestClose={() => setModalOpen(false)}
-      />
 
       {data?.map((server) => (
         <SidebarButton
@@ -81,7 +91,12 @@ const Sidebar = () => {
       <SidebarButton
         icon="home"
         text="추가"
-        onClick={onClickAddServer}
+        onClick={openCreateServerModal}
+      ></SidebarButton>
+      <SidebarButton
+        icon="home"
+        text="초대"
+        onClick={openInviteServerModal}
       ></SidebarButton>
     </div>
   );

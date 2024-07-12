@@ -3,7 +3,7 @@ import {
   Server,
   ServerResponse,
 } from "@/@types";
-import { createServer, deleteServer } from "@/api/server";
+import { createServer, deleteServer, joinServer } from "@/api/server";
 import { QUERY_KEYS } from "@/constants/queryKeys";
 import { API_ROUTE } from "@/constants/routeName";
 import { api, ApiError } from "@/lib/api";
@@ -83,6 +83,33 @@ export const useUserServersWithChannels = () => {
       return api.get(API_ROUTE.SERVER.GET_USER_SERVERS_WITH_CHANNELS, {});
     },
     retry: false,
+  });
+};
+
+export const useJoinServer = ({
+  successCallback,
+  errorCallback,
+}: {
+  successCallback?: () => void;
+  errorCallback?: (error: any) => void;
+}) => {
+  const queryClient = useQueryClient();
+
+  return useMutation<ServerResponse, ApiError, string>({
+    mutationFn: (inviteCode: string) => joinServer({ inviteCode }),
+    onSuccess: (newServer) => {
+      queryClient.setQueryData<getAllUserServersWithChannelsResponse>(
+        QUERY_KEYS.USER_SERVERS_WITH_CHANNELS,
+        (oldData) => {
+          if (!oldData) return oldData;
+          return [...oldData, newServer];
+        }
+      );
+    },
+    onError: (error) => {
+      console.error("Failed to join server:", error);
+      errorCallback && errorCallback(error);
+    },
   });
 };
 

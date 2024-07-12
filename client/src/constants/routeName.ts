@@ -26,6 +26,7 @@ export const API_ROUTE = {
     CREATE: "/server/",
     DELETE: (id: number | string) => `/server/${id}`,
     GET_USER_SERVERS_WITH_CHANNELS: "/server/user",
+    JOIN: "/server/join",
   },
   CHANNEL: {
     CREATE: "/channel",
@@ -34,6 +35,5 @@ export const API_ROUTE = {
   MESSAGES: {
     GET: (channelId: number | string) => `/channels/${channelId}/messages`,
     POST: (channelId: number | string) => `/channels/${channelId}/messages`,
-    // JOIN: (channelId: number | string) => `/channel/${channelId}/join`,
   },
 };

@@ -11,6 +11,7 @@ import {
 } from "@tanstack/react-query";
 import ErrorFallback from "./components/ErrorFallback";
 import ModalProvider from "./contexts/ModalContext";
+import ToastProvider from "./contexts/ToastContext";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
@@ -29,9 +30,11 @@ root.render(
     <ErrorBoundary FallbackComponent={ErrorFallback} onReset={() => {}}>
       <BrowserRouter>
         <AuthProvider>
-          <ModalProvider>
-            <App />
-          </ModalProvider>
+          <ToastProvider>
+            <ModalProvider>
+              <App />
+            </ModalProvider>
+          </ToastProvider>
         </AuthProvider>
       </BrowserRouter>
     </ErrorBoundary>

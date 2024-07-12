@@ -11,12 +11,13 @@ export interface Server {
   name: string;
   owner_id: number;
   created_at: string;
+  inviteCode: string;
   channels: Channel[];
 }
 
 export type ServerResponse = Pick<
   Server,
-  "id" | "name" | "owner_id" | "channels"
+  "id" | "name" | "owner_id" | "channels" | "inviteCode"
 >;
 
 export type getAllUserServersWithChannelsResponse = ServerResponse[];
