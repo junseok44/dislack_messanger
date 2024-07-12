@@ -7,6 +7,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { io } from "socket.io-client";
 import ChannelSideBar from "./components/ChannelSideBar";
 import { useChannelSocket, useMessages, useSendMessage } from "./hooks";
+import { useAuth } from "@/contexts/AuthContext";
 
 const socket = io(
   process.env.REACT_APP_API_URL + SOCKET_NAMESPACES.CHANNELS || ""
@@ -29,6 +30,8 @@ const Channel = () => {
     hasNextPage,
     fetchNextPage,
   } = useMessages(parsedChannelId);
+
+  const { user } = useAuth();
 
   const { mutate: sendMessage } = useSendMessage();
 
@@ -73,6 +76,7 @@ const Channel = () => {
       channelId: parsedChannelId!,
       content: messageContent,
       tempId: Math.random(),
+      authorId: user?.id!,
     });
     setMessageContent("");
   };
@@ -99,7 +103,8 @@ const Channel = () => {
                 key={message.id}
                 className={`${message.isTemp ? `text-warning-light` : ``}`}
               >
-                {allMessages[index - 1]?.author.id == message.author.id ? (
+                {allMessages[index - 1]?.author.id == user?.id ||
+                allMessages[index - 1]?.author.id == message.authorId ? (
                   <div className="flex">
                     <div className="w-32"></div>
                     <div>{message.content}</div>

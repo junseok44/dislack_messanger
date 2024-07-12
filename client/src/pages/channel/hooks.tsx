@@ -25,6 +25,7 @@ import { SOCKET_EVENTS } from "@/constants/sockets";
 import { Socket } from "socket.io-client";
 import { useAuth } from "@/contexts/AuthContext";
 import { QUERY_KEYS } from "@/constants/queryKeys";
+import { useToast } from "@/contexts/ToastContext";
 
 export const useMessages = (channelId: number | undefined) => {
   return useInfiniteQuery<
@@ -60,10 +61,12 @@ export const useSendMessage = () => {
 
   const { user } = useAuth();
 
+  const { showToast } = useToast();
+
   return useMutation<
     Message,
     ApiError,
-    { channelId: number; content: string; tempId: number },
+    { channelId: number; content: string; tempId: number; authorId: number },
     {
       previousMessages:
         | InfiniteData<{
@@ -76,7 +79,7 @@ export const useSendMessage = () => {
   >({
     mutationFn: sendMessage,
     onMutate: async (newMessage) => {
-      const { channelId, tempId } = newMessage;
+      const { channelId, tempId, authorId } = newMessage;
       await queryClient.cancelQueries({
         queryKey: [API_ROUTE.MESSAGES.GET(channelId), channelId],
       });
@@ -99,7 +102,7 @@ export const useSendMessage = () => {
                   id: tempId,
                   createdAt: new Date().toISOString(),
                   isTemp: true,
-                  authorId: tempId,
+                  authorId,
                   author: {
                     id: tempId,
                     username: user?.username || "temp",
@@ -130,6 +133,10 @@ export const useSendMessage = () => {
           })
         );
       }
+      showToast({
+        message: err.message,
+        type: "error",
+      });
     },
     onSettled: (newMessage, error, variables) => {},
   });
@@ -201,6 +208,8 @@ export const useCreateChannel = ({
 } = {}) => {
   const queryClient = useQueryClient();
 
+  const { showToast } = useToast();
+
   return useMutation({
     mutationFn: (data: { name: string; serverId: number }) =>
       createChannel(data.name, data.serverId),
@@ -212,6 +221,10 @@ export const useCreateChannel = ({
     },
     onError: (error) => {
       console.error("Failed to create channel:", error);
+      showToast({
+        message: "Failed to create channel",
+        type: "error",
+      });
       errorCallback && errorCallback(error);
     },
   });
@@ -219,6 +232,8 @@ export const useCreateChannel = ({
 
 export const useDeleteChannel = () => {
   const queryClient = useQueryClient();
+
+  const { showToast } = useToast();
 
   return useMutation({
     mutationFn: (id: number) => deleteChannel(id),
@@ -230,6 +245,10 @@ export const useDeleteChannel = () => {
     },
     onError: (error) => {
       console.error("Failed to delete channel:", error);
+      showToast({
+        message: "Failed to delete channel",
+        type: "error",
+      });
     },
   });
 };

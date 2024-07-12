@@ -79,6 +79,7 @@ export const login = async (req: Request, res: Response) => {
       message: "Logged in successfully",
       user: {
         username: user.username,
+        id: user.id,
       },
     });
   } catch (error) {
@@ -152,6 +153,7 @@ export const checkAuth = async (req: Request, res: Response) => {
       where: { id: req.user.id },
       select: {
         username: true,
+        id: true,
       },
     });
 

@@ -21,6 +21,7 @@ interface AuthContextType {
 
 interface User {
   username: string;
+  id: number;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -75,6 +76,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     onSuccess: (data: {
       user: {
         username: string;
+        id: number;
       };
     }) => {
       login(data.user);
