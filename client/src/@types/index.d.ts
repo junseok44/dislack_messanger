@@ -14,10 +14,12 @@ export interface Server {
   channels: Channel[];
 }
 
-export type getAllUserServersWithChannelsResponse = Pick<
+export type ServerResponse = Pick<
   Server,
   "id" | "name" | "owner_id" | "channels"
->[];
+>;
+
+export type getAllUserServersWithChannelsResponse = ServerResponse[];
 
 interface Message {
   id: number;

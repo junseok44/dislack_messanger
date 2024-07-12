@@ -1,18 +1,16 @@
 import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
 import { ERROR_CODES } from "../constants/errorCode";
 import { getNamespace } from "../sockets";
 import { SOCKET_EVENTS, SOCKET_NAMESPACES } from "../constants/socket";
 import { delay } from "../utils/delay";
-
-const prisma = new PrismaClient();
+import db from "../config/db";
 
 export const createChannel = async (req: Request, res: Response) => {
   const { name, serverId } = req.body;
   const userId = req.user.id;
 
   try {
-    const server = await prisma.server.findUnique({
+    const server = await db.server.findUnique({
       where: { id: serverId },
     });
 
@@ -30,7 +28,7 @@ export const createChannel = async (req: Request, res: Response) => {
       });
     }
 
-    const channel = await prisma.channel.create({
+    const channel = await db.channel.create({
       data: {
         name,
         serverId,
@@ -52,7 +50,7 @@ export const deleteChannel = async (req: Request, res: Response) => {
   const userId = req.user.id;
 
   try {
-    const channel = await prisma.channel.findUnique({
+    const channel = await db.channel.findUnique({
       where: { id: parseInt(id) },
     });
 
@@ -70,7 +68,7 @@ export const deleteChannel = async (req: Request, res: Response) => {
       });
     }
 
-    await prisma.channel.delete({
+    await db.channel.delete({
       where: { id: parseInt(id) },
     });
 
@@ -87,7 +85,7 @@ export const getChannelMessages = async (req: Request, res: Response) => {
   const { channelId } = req.params;
   const { cursor, limit = 20 } = req.query;
 
-  const messages = await prisma.message.findMany({
+  const messages = await db.message.findMany({
     where: { channelId: Number(channelId) },
     take: Number(limit),
     skip: cursor ? 1 : 0, // cursor가 있다면 1개를 건너뜀
@@ -118,7 +116,7 @@ export const createMessage = async (req: Request, res: Response) => {
   const { id: authorId } = req.user;
 
   try {
-    const newMessage = await prisma.message.create({
+    const newMessage = await db.message.create({
       data: {
         content,
         channelId: Number(channelId),

@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import prisma from "../config/db"; // Assuming you are using Prisma
+import prisma from "../config/db";
 import tokenConfig, { getTokenCookieOption } from "../config/token";
 import { generateAccessToken, generateRefreshToken } from "../utils/token";
 import { z } from "zod";

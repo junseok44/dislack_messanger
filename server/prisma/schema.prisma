@@ -34,7 +34,7 @@ model Server {
   owner   User    @relation("owner", fields: [ownerId], references: [id])
   
   members User[] @relation("members")
-  channels Channel[] 
+  channels Channel[]
 
 }
 
@@ -45,7 +45,7 @@ model Channel {
   owner     User    @relation(fields: [ownerId], references: [id])
 
   serverId  Int
-  server    Server  @relation(fields: [serverId], references: [id])
+  server    Server  @relation(fields: [serverId], references: [id], onDelete: Cascade)
 
   messages  Message[] @relation("channelMessages")
   protected Boolean @default(false)
@@ -61,7 +61,7 @@ model Message {
   content   String
 
   channelId Int
-  channel   Channel  @relation("channelMessages", fields: [channelId], references: [id])
+  channel   Channel  @relation("channelMessages", fields: [channelId], references: [id], onDelete: Cascade)
 
   authorId  Int
   author    User     @relation(fields: [authorId], references: [id])
@@ -75,6 +75,6 @@ model LastSeenMessageOnChannel {
   channelId Int
   messageId Int
 
-  user     User    @relation(fields: [userId], references: [id])
-  channel  Channel @relation(fields: [channelId], references: [id])
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  channel  Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
 }

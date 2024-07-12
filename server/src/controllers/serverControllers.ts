@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
-import { ERROR_CODES } from "../constants/errorCode";
 import prisma from "../config/db";
+import { ERROR_CODES } from "../constants/errorCode";
 
 export const createServer = async (req: Request, res: Response) => {
   const { name } = req.body;
@@ -19,6 +18,9 @@ export const createServer = async (req: Request, res: Response) => {
             protected: true,
           },
         },
+      },
+      include: {
+        channels: true,
       },
     });
     res.status(201).json(server);
@@ -59,6 +61,8 @@ export const deleteServer = async (req: Request, res: Response) => {
 
     res.status(204).send();
   } catch (error) {
+    console.log(error);
+
     res.status(500).json({
       errorCode: ERROR_CODES.INTERNAL_SERVER_ERROR,
       message: "Internal Server Error",

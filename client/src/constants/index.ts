@@ -1,3 +1,3 @@
 export const AUTH_TOKEN = "auth";
 
-export const PAGE_LIMIT = 20;
+export const CHANNEL_MESSAGE_LIMIT = 20;

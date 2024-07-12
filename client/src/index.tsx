@@ -10,6 +10,7 @@ import {
   QueryClientProvider,
 } from "@tanstack/react-query";
 import ErrorFallback from "./components/ErrorFallback";
+import ModalProvider from "./contexts/ModalContext";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
@@ -18,7 +19,7 @@ const root = ReactDOM.createRoot(
 const queryClient = new QueryClient({
   queryCache: new QueryCache({
     onError: (error) => {
-      console.log(error);
+      // console.log(error);
     },
   }),
 });
@@ -28,7 +29,9 @@ root.render(
     <ErrorBoundary FallbackComponent={ErrorFallback} onReset={() => {}}>
       <BrowserRouter>
         <AuthProvider>
-          <App />
+          <ModalProvider>
+            <App />
+          </ModalProvider>
         </AuthProvider>
       </BrowserRouter>
     </ErrorBoundary>

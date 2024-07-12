@@ -1,6 +1,6 @@
 import React from "react";
 import { Outlet } from "react-router-dom";
-import ServerSelector from "../../components/ServerSelector";
+import ServerSelector from "../../components/server/ServerSelector";
 
 const MainLayout = () => {
   return (

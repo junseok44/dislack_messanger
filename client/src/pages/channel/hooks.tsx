@@ -13,12 +13,18 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
-import { fetchMessages, sendMessage } from "./fetcher";
+import {
+  createChannel,
+  deleteChannel,
+  fetchMessages,
+  sendMessage,
+} from "./api";
 import { produce } from "immer";
 import { useEffect } from "react";
 import { SOCKET_EVENTS } from "@/constants/sockets";
 import { Socket } from "socket.io-client";
 import { useAuth } from "@/contexts/AuthContext";
+import { QUERY_KEYS } from "@/constants/queryKeys";
 
 export const useMessages = (channelId: number | undefined) => {
   return useInfiniteQuery<
@@ -180,9 +186,50 @@ export const useChannelSocket = (
     socket.on(SOCKET_EVENTS.NEW_MESSAGE, handleNewMessage);
 
     return () => {
-      console.log("Leaving channel:", parsedChannelId);
       socket.emit(SOCKET_EVENTS.LEAVE_CHANNEL, parsedChannelId);
       socket.off(SOCKET_EVENTS.NEW_MESSAGE, handleNewMessage);
     };
   }, [channelId, queryClient]);
+};
+
+export const useCreateChannel = ({
+  successCallback,
+  errorCallback,
+}: {
+  successCallback?: () => void;
+  errorCallback?: (error: any) => void;
+} = {}) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: { name: string; serverId: number }) =>
+      createChannel(data.name, data.serverId),
+    onSuccess: async () => {
+      await queryClient.refetchQueries({
+        queryKey: QUERY_KEYS.USER_SERVERS_WITH_CHANNELS,
+      });
+      successCallback && successCallback();
+    },
+    onError: (error) => {
+      console.error("Failed to create channel:", error);
+      errorCallback && errorCallback(error);
+    },
+  });
+};
+
+export const useDeleteChannel = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) => deleteChannel(id),
+    onSuccess: () => {
+      queryClient.refetchQueries({
+        queryKey: QUERY_KEYS.USER_SERVERS_WITH_CHANNELS,
+      });
+      console.log("Channel deleted successfully");
+    },
+    onError: (error) => {
+      console.error("Failed to delete channel:", error);
+    },
+  });
 };

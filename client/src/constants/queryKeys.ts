@@ -1,0 +1,5 @@
+import { API_ROUTE } from "./routeName";
+
+export const QUERY_KEYS = {
+  USER_SERVERS_WITH_CHANNELS: [API_ROUTE.SERVER.GET_USER_SERVERS_WITH_CHANNELS],
+};

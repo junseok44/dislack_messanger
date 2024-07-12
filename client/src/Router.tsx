@@ -13,7 +13,7 @@ import Channel from "./pages/channel";
 import MyPage from "./pages/mypage";
 import Friends from "./pages/friends";
 import MyPageLayout from "./pages/@common/MyPageLayout";
-import InitializeMainPage from "./pages/@common/InitializeMainPage";
+import InitializeServer from "./components/server/InitializeServer";
 
 const Router = () => {
   return (
@@ -27,7 +27,7 @@ const Router = () => {
       <Routes>
         <Route path={PAGE_ROUTE.HOME} element={<Home />} />
         <Route element={<PrivateRoute />}>
-          <Route element={<InitializeMainPage />}>
+          <Route element={<InitializeServer />}>
             <Route element={<MainLayout />}>
               <Route path={PAGE_ROUTE.CHANNELS} element={<Channel />} />
               <Route element={<MyPageLayout />}>

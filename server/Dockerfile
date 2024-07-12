@@ -12,7 +12,7 @@ RUN npx prisma generate
 
 RUN chmod +x /app/wait-for-it.sh
 
-ENTRYPOINT ["/bin/sh", "-c", "/app/wait-for-it.sh db 3306 20 && npx prisma migrate deploy && npm run dev"]
+ENTRYPOINT ["/bin/sh", "-c", "/app/wait-for-it.sh db 3306 20 && npx prisma migrate deploy && (npm run dev & npx prisma studio)"]
 
 
 
