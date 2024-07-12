@@ -2,6 +2,8 @@ import { memo } from "react";
 import { Channel, Server } from "@/@types";
 import { useModal } from "@/contexts/ModalContext";
 import { useDeleteServer } from "@/hooks/server";
+import { useCreateChannel } from "../hooks";
+import CreateChannelForm from "./CreateChannelForm";
 
 const ChannelSideBar = ({
   channels,
@@ -28,6 +30,14 @@ const ChannelSideBar = ({
     });
   };
 
+  const onClickAddChannel = () => {
+    showModal({
+      title: "Create Channel",
+      showControls: false,
+      children: <CreateChannelForm serverId={server.id} />,
+    });
+  };
+
   return (
     <div className="w-60 bg-secondary-dark h-full">
       <div>
@@ -41,6 +51,7 @@ const ChannelSideBar = ({
       >
         서버 삭제
       </button>
+      <button onClick={onClickAddChannel}>채널 추가</button>
       {channels.map((channel) => (
         <div
           key={channel.id}

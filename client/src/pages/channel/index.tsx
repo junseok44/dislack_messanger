@@ -103,8 +103,7 @@ const Channel = () => {
                 key={message.id}
                 className={`${message.isTemp ? `text-warning-light` : ``}`}
               >
-                {allMessages[index - 1]?.author.id == user?.id ||
-                allMessages[index - 1]?.author.id == message.authorId ? (
+                {allMessages[index - 1]?.author.id == message.authorId ? (
                   <div className="flex">
                     <div className="w-32"></div>
                     <div>{message.content}</div>

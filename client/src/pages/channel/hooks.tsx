@@ -206,17 +206,12 @@ export const useCreateChannel = ({
   successCallback?: () => void;
   errorCallback?: (error: any) => void;
 } = {}) => {
-  const queryClient = useQueryClient();
-
   const { showToast } = useToast();
 
   return useMutation({
     mutationFn: (data: { name: string; serverId: number }) =>
       createChannel(data.name, data.serverId),
     onSuccess: async () => {
-      await queryClient.refetchQueries({
-        queryKey: QUERY_KEYS.USER_SERVERS_WITH_CHANNELS,
-      });
       successCallback && successCallback();
     },
     onError: (error) => {

@@ -29,7 +29,7 @@ export const API_ROUTE = {
     JOIN: "/server/join",
   },
   CHANNEL: {
-    CREATE: "/channel",
+    CREATE: "/channels",
     DELETE: (id: number | string) => `/channels/${id}`,
   },
   MESSAGES: {

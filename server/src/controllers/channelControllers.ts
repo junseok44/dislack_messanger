@@ -38,6 +38,8 @@ export const createChannel = async (req: Request, res: Response) => {
 
     res.status(201).json(channel);
   } catch (error) {
+    console.log(error);
+
     res.status(500).json({
       errorCode: ERROR_CODES.INTERNAL_SERVER_ERROR,
       message: "Internal Server Error",

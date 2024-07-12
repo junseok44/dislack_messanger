@@ -79,12 +79,24 @@ export const joinServer = async (req: Request, res: Response) => {
   try {
     const server = await prisma.server.findUnique({
       where: { inviteCode },
+      include: {
+        members: true,
+      },
     });
 
     if (!server) {
       return res.status(404).json({
         message: "Server not found",
         errorCode: ERROR_CODES.SERVER_NOT_FOUND,
+      });
+    }
+
+    const isMember = server.members.some((member) => member.id === userId);
+
+    if (isMember) {
+      return res.status(400).json({
+        message: "User is already a member of this server",
+        errorCode: ERROR_CODES.USER_ALREADY_MEMBER,
       });
     }
 
