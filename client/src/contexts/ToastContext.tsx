@@ -1,54 +1,10 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useCallback,
-  ReactNode,
-} from "react";
-import { v4 as uuidv4 } from "uuid";
+import { useToastStore } from "@/store/toastStore";
+import React, { useState, useEffect } from "react";
 
-interface Toast {
-  id: string;
-  message: string;
-  type: "success" | "error" | "info" | "warning";
-  duration?: number;
-}
-
-interface ShowToastOptions {
-  message: string;
-  type: "success" | "error" | "info" | "warning";
-  duration?: number;
-}
-
-interface ToastContextType {
-  showToast: (options: ShowToastOptions) => void;
-  removeToast: (id: string) => void;
-}
-
-const ToastContext = createContext<ToastContextType | undefined>(undefined);
-
-interface ToastProviderProps {
-  children: ReactNode;
-}
-
-export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
-  const [toasts, setToasts] = useState<Toast[]>([]);
-
-  const showToast = useCallback(
-    ({ message, type, duration = 3000 }: ShowToastOptions) => {
-      const id = uuidv4();
-      setToasts((prevToasts) => [
-        ...prevToasts,
-        { id, message, type, duration },
-      ]);
-      setTimeout(() => removeToast(id), duration);
-    },
-    []
-  );
-
-  const removeToast = useCallback((id: string) => {
-    setToasts((prevToasts) => prevToasts.filter((toast) => toast.id !== id));
-  }, []);
+const ToastContext = ({ children }: { children: React.ReactNode }) => {
+  const toasts = useToastStore((state) => state.toasts);
+  const removeToast = useToastStore((state) => state.removeToast);
+  const [exitingToasts, setExitingToasts] = useState<string[]>([]);
 
   const getToastStyle = (type: "success" | "error" | "info" | "warning") => {
     switch (type) {
@@ -65,31 +21,43 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
     }
   };
 
+  useEffect(() => {
+    toasts.forEach((toast) => {
+      if (!exitingToasts.includes(toast.id)) {
+        setTimeout(() => {
+          setExitingToasts((prev) => [...prev, toast.id]);
+        }, toast.duration || 3000);
+      }
+    });
+  }, [toasts, exitingToasts]);
+
   return (
-    <ToastContext.Provider value={{ showToast, removeToast }}>
+    <>
       {children}
       <div className="fixed bottom-4 right-4 space-y-4">
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`text-white p-3 rounded-md shadow-md transform transition-all duration-500 ease-out animate-slide-in-right ${getToastStyle(
-              toast.type
-            )}`}
+            className={`text-white p-3 rounded-md shadow-md transform transition-all duration-500 ease-out ${
+              exitingToasts.includes(toast.id)
+                ? "animate-slide-out-right"
+                : "animate-slide-in-right"
+            } ${getToastStyle(toast.type)}`}
+            onAnimationEnd={() => {
+              if (exitingToasts.includes(toast.id)) {
+                removeToast(toast.id);
+                setExitingToasts((prev) =>
+                  prev.filter((toastId) => toastId !== toast.id)
+                );
+              }
+            }}
           >
             {toast.message}
           </div>
         ))}
       </div>
-    </ToastContext.Provider>
+    </>
   );
 };
 
-export const useToast = () => {
-  const context = useContext(ToastContext);
-  if (context === undefined) {
-    throw new Error("useToast must be used within a ToastProvider");
-  }
-  return context;
-};
-
-export default ToastProvider;
+export default ToastContext;

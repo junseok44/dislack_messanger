@@ -25,7 +25,7 @@ import { SOCKET_EVENTS, SOCKET_NAMESPACES } from "@/constants/sockets";
 import { io, Socket } from "socket.io-client";
 import { useAuth } from "@/contexts/AuthContext";
 import { QUERY_KEYS } from "@/constants/queryKeys";
-import { useToast } from "@/contexts/ToastContext";
+import useToast from "@/hooks/useToast";
 
 export const useChannelSocket = (
   channelId: string | undefined,

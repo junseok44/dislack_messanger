@@ -1,4 +1,3 @@
-import { useToast } from "@/contexts/ToastContext";
 import { useJoinServer } from "@/hooks/server";
 import useModal from "@/hooks/useModal";
 import React, { useState } from "react";

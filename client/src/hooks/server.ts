@@ -6,10 +6,10 @@ import {
 import { createServer, deleteServer, joinServer } from "@/api/server";
 import { QUERY_KEYS } from "@/constants/queryKeys";
 import { API_ROUTE } from "@/constants/routeName";
-import { useToast } from "@/contexts/ToastContext";
 import { api, ApiError } from "@/lib/api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { produce } from "immer";
+import useToast from "./useToast";
 
 export const useCreateServer = ({
   successCallback,

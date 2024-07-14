@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import CreateServerForm from "./CreateServerModal";
 import InviteServerForm from "./InviteServerModal";
 import useModal from "@/hooks/useModal";
+import useToast from "@/hooks/useToast";
 
 const SidebarButton = ({
   icon,
