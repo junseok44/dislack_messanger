@@ -8,14 +8,7 @@ const InviteServerForm: React.FC = () => {
   const { closeModal } = useModal();
   const { showToast } = useToast();
 
-  const { mutate: joinServer } = useJoinServer({
-    errorCallback: (error) => {
-      showToast({
-        message: error.message,
-        type: "error",
-      });
-    },
-  });
+  const { mutate: joinServer } = useJoinServer({});
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

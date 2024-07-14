@@ -6,24 +6,23 @@ import {
 import { createServer, deleteServer, joinServer } from "@/api/server";
 import { QUERY_KEYS } from "@/constants/queryKeys";
 import { API_ROUTE } from "@/constants/routeName";
+import { useToast } from "@/contexts/ToastContext";
 import { api, ApiError } from "@/lib/api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { produce } from "immer";
 
 export const useCreateServer = ({
   successCallback,
-  errorCallback,
 }: {
   successCallback?: () => void;
-  errorCallback?: (error: any) => void;
 } = {}) => {
   const queryClient = useQueryClient();
+
+  const { showToast } = useToast();
 
   return useMutation<ServerResponse, ApiError, string>({
     mutationFn: (name: string) => createServer(name),
     onSuccess: async (newServer) => {
-      console.log(newServer);
-
       queryClient.setQueryData<getAllUserServersWithChannelsResponse>(
         QUERY_KEYS.USER_SERVERS_WITH_CHANNELS,
         (oldData) => {
@@ -35,7 +34,10 @@ export const useCreateServer = ({
     },
     onError: (error) => {
       console.error("Failed to create server:", error);
-      errorCallback && errorCallback(error);
+      showToast({
+        message: error.message,
+        type: "error",
+      });
     },
   });
 };
@@ -43,33 +45,19 @@ export const useCreateServer = ({
 export const useDeleteServer = () => {
   const queryClient = useQueryClient();
 
+  const { showToast } = useToast();
+
   return useMutation<unknown, ApiError, number>({
     mutationFn: (id: number) => deleteServer(id),
     onSuccess: async (_, id) => {
-      console.log(
-        queryClient
-          .getQueryData<getAllUserServersWithChannelsResponse>(
-            QUERY_KEYS.USER_SERVERS_WITH_CHANNELS
-          )
-          ?.find((server) => server.id === id)
-      );
-
-      queryClient.setQueryData<getAllUserServersWithChannelsResponse>(
-        QUERY_KEYS.USER_SERVERS_WITH_CHANNELS,
-        (oldData) => {
-          if (!oldData) return oldData;
-          return produce(oldData, (draft) => {
-            const index = draft.findIndex((server) => server.id === id);
-            if (index > -1) {
-              draft.splice(index, 1);
-            }
-          });
-        }
-      );
       console.log("Server deleted successfully");
     },
     onError: (error) => {
       console.error("Failed to delete server:", error);
+      showToast({
+        message: error.message,
+        type: "error",
+      });
     },
   });
 };
@@ -78,22 +66,17 @@ export const useUserServersWithChannels = () => {
   return useQuery<getAllUserServersWithChannelsResponse>({
     queryKey: QUERY_KEYS.USER_SERVERS_WITH_CHANNELS,
     queryFn: async ({ queryKey, pageParam }) => {
-      console.log("useUserServersWithChannels");
-
       return api.get(API_ROUTE.SERVER.GET_USER_SERVERS_WITH_CHANNELS, {});
     },
     retry: false,
+    staleTime: Infinity,
   });
 };
 
-export const useJoinServer = ({
-  successCallback,
-  errorCallback,
-}: {
-  successCallback?: () => void;
-  errorCallback?: (error: any) => void;
-}) => {
+export const useJoinServer = ({}: {}) => {
   const queryClient = useQueryClient();
+
+  const { showToast } = useToast();
 
   return useMutation<ServerResponse, ApiError, string>({
     mutationFn: (inviteCode: string) => joinServer({ inviteCode }),
@@ -108,7 +91,10 @@ export const useJoinServer = ({
     },
     onError: (error) => {
       console.error("Failed to join server:", error);
-      errorCallback && errorCallback(error);
+      showToast({
+        message: error.message,
+        type: "error",
+      });
     },
   });
 };

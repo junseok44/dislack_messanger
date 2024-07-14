@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import prisma from "../config/db";
 import { ERROR_CODES } from "../constants/errorCode";
+import { SOCKET_EVENTS, SOCKET_NAMESPACES } from "../constants/socket";
+import { getNamespace } from "../sockets";
 
 export const createServer = async (req: Request, res: Response) => {
   const { name } = req.body;
@@ -61,6 +63,11 @@ export const deleteServer = async (req: Request, res: Response) => {
       where: { id: parseInt(id) },
     });
 
+    const serverNameSpace = getNamespace(SOCKET_NAMESPACES.SERVER);
+    serverNameSpace.emit(SOCKET_EVENTS.SERVER.DELETE_SERVER, {
+      serverId: parseInt(id),
+    });
+
     res.status(204).send();
   } catch (error) {
     console.log(error);
@@ -91,7 +98,11 @@ export const joinServer = async (req: Request, res: Response) => {
       });
     }
 
-    const isMember = server.members.some((member) => member.id === userId);
+    const isMember =
+      server.members.some((member) => member.id === userId) ||
+      server.ownerId === userId;
+
+    console.log("isMember", isMember);
 
     if (isMember) {
       return res.status(400).json({

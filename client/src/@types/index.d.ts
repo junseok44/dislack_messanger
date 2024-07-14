@@ -9,7 +9,7 @@ export interface Channel {
 export interface Server {
   id: number;
   name: string;
-  owner_id: number;
+  ownerId: number;
   created_at: string;
   inviteCode: string;
   channels: Channel[];
@@ -17,7 +17,7 @@ export interface Server {
 
 export type ServerResponse = Pick<
   Server,
-  "id" | "name" | "owner_id" | "channels" | "inviteCode"
+  "id" | "name" | "ownerId" | "channels" | "inviteCode"
 >;
 
 export type getAllUserServersWithChannelsResponse = ServerResponse[];

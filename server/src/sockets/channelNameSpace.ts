@@ -2,23 +2,17 @@ import { Server } from "socket.io";
 import { SOCKET_EVENTS, SOCKET_NAMESPACES } from "../constants/socket";
 
 export const initializeChannelNamespace = (io: Server) => {
-  const channelsNamespace = io.of(SOCKET_NAMESPACES.CHANNELS);
+  const channelNameSpace = io.of(SOCKET_NAMESPACES.CHANNEL);
 
-  channelsNamespace.on(SOCKET_EVENTS.CONNECTION, (socket) => {
-    // console.log("a user connected to channels namespace");
-
-    socket.on(SOCKET_EVENTS.JOIN_CHANNEL, (channelId) => {
+  channelNameSpace.on(SOCKET_EVENTS.CHANNEL.CONNECTION, (socket) => {
+    socket.on(SOCKET_EVENTS.CHANNEL.JOIN_CHANNEL, (channelId) => {
       socket.join(channelId);
-      // console.log(`User joined channel: ${channelId}`);
     });
 
-    socket.on(SOCKET_EVENTS.LEAVE_CHANNEL, (channelId) => {
+    socket.on(SOCKET_EVENTS.CHANNEL.LEAVE_CHANNEL, (channelId) => {
       socket.leave(channelId);
-      // console.log(`User left channel: ${channelId}`);
     });
 
-    socket.on(SOCKET_EVENTS.DISCONNECT, () => {
-      // console.log("user disconnected from channels namespace");
-    });
+    socket.on(SOCKET_EVENTS.CHANNEL.DISCONNECT, () => {});
   });
 };

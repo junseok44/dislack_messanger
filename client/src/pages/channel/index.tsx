@@ -1,6 +1,9 @@
 import { PAGE_ROUTE } from "@/constants/routeName";
 import { SOCKET_NAMESPACES } from "@/constants/sockets";
-import { useGetUserServersWithChannels } from "@/hooks/server";
+import {
+  useGetUserServersWithChannels,
+  useUserServersWithChannels,
+} from "@/hooks/server";
 import useAutoScroll from "@/hooks/useAutoScroll";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -9,12 +12,8 @@ import ChannelSideBar from "./components/ChannelSideBar";
 import { useChannelSocket, useMessages, useSendMessage } from "./hooks";
 import { useAuth } from "@/contexts/AuthContext";
 
-const socket = io(
-  process.env.REACT_APP_API_URL + SOCKET_NAMESPACES.CHANNELS || ""
-);
-
 const Channel = () => {
-  const allServers = useGetUserServersWithChannels();
+  const { data: allServers } = useUserServersWithChannels();
   const { serverId, channelId } = useParams<{
     serverId: string;
     channelId: string;
@@ -42,7 +41,7 @@ const Channel = () => {
     allMessages.length,
   ]);
 
-  useChannelSocket(socket, channelId, parsedChannelId);
+  useChannelSocket(channelId, parsedChannelId);
 
   if (!serverId || !parsedChannelId) {
     return <div>loading...</div>;
@@ -93,6 +92,7 @@ const Channel = () => {
         channels={channels}
         server={currentServer}
         onClickChannels={onClickChannels}
+        userId={user?.id}
       />
       <div className="flex-grow h-full bg-background-dark">
         <div className="flex flex-col h-full">
@@ -103,7 +103,7 @@ const Channel = () => {
                 key={message.id}
                 className={`${message.isTemp ? `text-warning-light` : ``}`}
               >
-                {allMessages[index - 1]?.author.id == message.authorId ? (
+                {allMessages[index - 1]?.authorId == message.authorId ? (
                   <div className="flex">
                     <div className="w-32"></div>
                     <div>{message.content}</div>

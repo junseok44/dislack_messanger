@@ -35,7 +35,7 @@ const CommonModal: React.FC<{
       onRequestClose={onRequestClose}
       contentLabel={title}
       overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
-      className="bg-background-light-subtle dark:bg-background-dark-subtle p-6 rounded-lg max-w-lg mx-auto"
+      className="bg-background-light-subtle dark:bg-background-dark-subtle p-6 rounded-lg max-w-sm mx-auto"
     >
       <h2 className="text-xl font-semibold text-text-light-default dark:text-text-dark-default mb-4">
         {title}

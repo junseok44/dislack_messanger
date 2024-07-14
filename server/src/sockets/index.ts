@@ -2,6 +2,7 @@ import { Server } from "socket.io";
 import { Server as HttpServer } from "http";
 import { initializeChannelNamespace } from "./channelNameSpace";
 import { SOCKET_EVENTS, SOCKET_NAMESPACES } from "../constants/socket";
+import { initializeServerNamespace } from "./serverNameSpace";
 
 let io: Server | null = null;
 
@@ -13,6 +14,7 @@ export const initializeSocket = (server: HttpServer) => {
   });
 
   initializeChannelNamespace(io);
+  initializeServerNamespace(io);
 };
 
 export const getIO = (): Server => {

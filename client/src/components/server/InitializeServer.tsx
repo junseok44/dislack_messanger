@@ -1,11 +1,14 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import { useUserServersWithChannels } from "@/hooks/server";
 import LoadingPage from "@/pages/@common/LoadingPage";
 import ErrorPage from "@/pages/@common/ErrorPage";
+import { useServerSocket } from "@/hooks/useServerSocket";
 
 const InitializeServer = () => {
   const { isLoading, isError } = useUserServersWithChannels();
+
+  useServerSocket();
 
   return (
     <>

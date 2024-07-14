@@ -20,12 +20,79 @@ import {
   sendMessage,
 } from "./api";
 import { produce } from "immer";
-import { useEffect } from "react";
-import { SOCKET_EVENTS } from "@/constants/sockets";
-import { Socket } from "socket.io-client";
+import { useEffect, useRef } from "react";
+import { SOCKET_EVENTS, SOCKET_NAMESPACES } from "@/constants/sockets";
+import { io, Socket } from "socket.io-client";
 import { useAuth } from "@/contexts/AuthContext";
 import { QUERY_KEYS } from "@/constants/queryKeys";
 import { useToast } from "@/contexts/ToastContext";
+
+export const useChannelSocket = (
+  channelId: string | undefined,
+  parsedChannelId: number | undefined
+) => {
+  const queryClient = useQueryClient();
+  const socketRef = useRef<Socket | null>(null);
+
+  useEffect(() => {
+    if (!parsedChannelId) {
+      console.log("No parsedChannelId provided");
+      return;
+    }
+
+    if (!socketRef.current) {
+      socketRef.current = io(
+        process.env.REACT_APP_API_URL + SOCKET_NAMESPACES.CHANNEL || ""
+      );
+    }
+
+    const socket = socketRef.current;
+
+    socket.emit(SOCKET_EVENTS.CHANNEL.JOIN_CHANNEL, channelId);
+
+    const handleNewMessage = (newMessage: CreateMessageResponse) => {
+      const queryKey = [
+        API_ROUTE.MESSAGES.GET(parsedChannelId),
+        parsedChannelId,
+      ];
+
+      const previousMessages =
+        queryClient.getQueryData<
+          InfiniteData<{ messages: Message[]; nextCursor: number | null }>
+        >(queryKey);
+
+      if (previousMessages) {
+        queryClient.setQueryData(
+          queryKey,
+          produce(previousMessages, (draft) => {
+            draft.pages.forEach((page, index) => {
+              if (index === 0) {
+                const existingMessageIndex = page.messages.findIndex(
+                  (message) => message.id == newMessage.tempId
+                );
+
+                if (existingMessageIndex !== -1) {
+                  page.messages[existingMessageIndex] = newMessage;
+                } else {
+                  page.messages.unshift(newMessage);
+                }
+              }
+            });
+          })
+        );
+      }
+    };
+
+    socket.on(SOCKET_EVENTS.CHANNEL.NEW_MESSAGE, handleNewMessage);
+
+    return () => {
+      socket.emit(SOCKET_EVENTS.CHANNEL.LEAVE_CHANNEL, parsedChannelId);
+      socket.off(SOCKET_EVENTS.CHANNEL.NEW_MESSAGE, handleNewMessage);
+      socketRef.current = null;
+      socket.disconnect();
+    };
+  }, [channelId, queryClient]);
+};
 
 export const useMessages = (channelId: number | undefined) => {
   return useInfiniteQuery<
@@ -142,63 +209,6 @@ export const useSendMessage = () => {
   });
 };
 
-export const useChannelSocket = (
-  socket: Socket,
-  channelId: string | undefined,
-  parsedChannelId: number | undefined
-) => {
-  const queryClient = useQueryClient();
-
-  useEffect(() => {
-    if (!parsedChannelId) {
-      console.log("No parsedChannelId provided");
-      return;
-    }
-
-    socket.emit(SOCKET_EVENTS.JOIN_CHANNEL, channelId);
-
-    const handleNewMessage = (newMessage: CreateMessageResponse) => {
-      const queryKey = [
-        API_ROUTE.MESSAGES.GET(parsedChannelId),
-        parsedChannelId,
-      ];
-
-      const previousMessages =
-        queryClient.getQueryData<
-          InfiniteData<{ messages: Message[]; nextCursor: number | null }>
-        >(queryKey);
-
-      if (previousMessages) {
-        queryClient.setQueryData(
-          queryKey,
-          produce(previousMessages, (draft) => {
-            draft.pages.forEach((page, index) => {
-              if (index === 0) {
-                const existingMessageIndex = page.messages.findIndex(
-                  (message) => message.id == newMessage.tempId
-                );
-
-                if (existingMessageIndex !== -1) {
-                  page.messages[existingMessageIndex] = newMessage;
-                } else {
-                  page.messages.unshift(newMessage);
-                }
-              }
-            });
-          })
-        );
-      }
-    };
-
-    socket.on(SOCKET_EVENTS.NEW_MESSAGE, handleNewMessage);
-
-    return () => {
-      socket.emit(SOCKET_EVENTS.LEAVE_CHANNEL, parsedChannelId);
-      socket.off(SOCKET_EVENTS.NEW_MESSAGE, handleNewMessage);
-    };
-  }, [channelId, queryClient]);
-};
-
 export const useCreateChannel = ({
   successCallback,
   errorCallback,
@@ -217,7 +227,7 @@ export const useCreateChannel = ({
     onError: (error) => {
       console.error("Failed to create channel:", error);
       showToast({
-        message: "Failed to create channel",
+        message: error.message,
         type: "error",
       });
       errorCallback && errorCallback(error);
@@ -233,17 +243,18 @@ export const useDeleteChannel = () => {
   return useMutation({
     mutationFn: (id: number) => deleteChannel(id),
     onSuccess: () => {
-      queryClient.refetchQueries({
-        queryKey: QUERY_KEYS.USER_SERVERS_WITH_CHANNELS,
-      });
+      // queryClient.refetchQueries({
+      //   queryKey: QUERY_KEYS.USER_SERVERS_WITH_CHANNELS,
+      // });
       console.log("Channel deleted successfully");
     },
     onError: (error) => {
-      console.error("Failed to delete channel:", error);
-      showToast({
-        message: "Failed to delete channel",
-        type: "error",
-      });
+      if (error instanceof ApiError) {
+        showToast({
+          message: error.message,
+          type: "error",
+        });
+      }
     },
   });
 };

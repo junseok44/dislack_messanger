@@ -36,6 +36,9 @@ export const createChannel = async (req: Request, res: Response) => {
       },
     });
 
+    const serverNameSpace = getNamespace(SOCKET_NAMESPACES.SERVER);
+    serverNameSpace.emit(SOCKET_EVENTS.SERVER.ADD_CHANNEL, { channel });
+
     res.status(201).json(channel);
   } catch (error) {
     console.log(error);
@@ -70,8 +73,21 @@ export const deleteChannel = async (req: Request, res: Response) => {
       });
     }
 
+    if (channel.protected) {
+      return res.status(403).json({
+        errorCode: ERROR_CODES.DEFAULT_CANNOT_BE_DELETED,
+        message: "Default channel cannot be deleted",
+      });
+    }
+
     await db.channel.delete({
       where: { id: parseInt(id) },
+    });
+
+    const serverNameSpace = getNamespace(SOCKET_NAMESPACES.SERVER);
+    serverNameSpace.emit(SOCKET_EVENTS.SERVER.DELETE_CHANNEL, {
+      serverId: channel.serverId,
+      channelId: channel.id,
     });
 
     res.status(204).send();
@@ -133,10 +149,10 @@ export const createMessage = async (req: Request, res: Response) => {
     // await delay(1000);
     // throw new Error("Failed to create message");
 
-    const channelsNamespace = getNamespace(SOCKET_NAMESPACES.CHANNELS);
+    const channelsNamespace = getNamespace(SOCKET_NAMESPACES.CHANNEL);
     channelsNamespace
       .to(channelId)
-      .emit(SOCKET_EVENTS.NEW_MESSAGE, { ...newMessage, tempId });
+      .emit(SOCKET_EVENTS.CHANNEL.NEW_MESSAGE, { ...newMessage, tempId });
 
     res.json(newMessage);
   } catch (error) {

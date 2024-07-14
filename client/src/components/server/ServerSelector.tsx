@@ -34,7 +34,7 @@ const SidebarButton = ({
       }`}
       onClick={onClick}
     >
-      <p className="text-sm text-center">{text}</p>
+      <p className="text-sm text-center text-nowrap">{text}</p>
     </div>
   );
 };
