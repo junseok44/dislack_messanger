@@ -1,25 +1,21 @@
+import { useModalStore } from "@/store/modalStore";
 import React from "react";
 import Modal from "react-modal";
 
 Modal.setAppElement("#root");
 
-const CommonModal: React.FC<{
-  isOpen: boolean;
-  onRequestClose?: () => void;
-  title: string;
-  text?: string;
-  onConfirm?: () => void;
-  children?: React.ReactNode;
-  showControls?: boolean;
-}> = ({
-  isOpen,
-  onRequestClose,
-  title,
-  text,
-  onConfirm,
-  children,
-  showControls,
-}) => {
+const CommonModal: React.FC = () => {
+  const {
+    isOpen,
+    title,
+    text,
+    onConfirm,
+    onRequestClose,
+    children,
+    showControls,
+    closeModal,
+  } = useModalStore();
+
   const renderTextWithLineBreaks = (text: string) => {
     return text.split("\n").map((str, index) => (
       <React.Fragment key={index}>
@@ -32,7 +28,7 @@ const CommonModal: React.FC<{
   return (
     <Modal
       isOpen={isOpen}
-      onRequestClose={onRequestClose}
+      onRequestClose={onRequestClose || closeModal}
       contentLabel={title}
       overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
       className="bg-background-light-subtle dark:bg-background-dark-subtle p-6 rounded-lg max-w-sm mx-auto"
@@ -50,7 +46,7 @@ const CommonModal: React.FC<{
         <div className="flex justify-end">
           {onRequestClose && (
             <button
-              onClick={onRequestClose}
+              onClick={onRequestClose || closeModal}
               className="mr-4 bg-gray-500 text-white py-2 px-4 rounded-md"
             >
               Cancel

@@ -1,14 +1,9 @@
 import { PAGE_ROUTE } from "@/constants/routeName";
-import {
-  useGetUserServersWithChannels,
-  useUserServersWithChannels,
-} from "@/hooks/server";
-import { useState } from "react";
+import { useUserServersWithChannels } from "@/hooks/server";
 import { useLocation, useNavigate } from "react-router-dom";
-import CreateServerModal from "./CreateServerModal";
-import { useModal } from "@/contexts/ModalContext";
-import InviteServerForm from "./InviteServerModal";
 import CreateServerForm from "./CreateServerModal";
+import InviteServerForm from "./InviteServerModal";
+import useModal from "@/hooks/useModal";
 
 const SidebarButton = ({
   icon,
@@ -52,10 +47,10 @@ const Sidebar = () => {
 
   const { data } = useUserServersWithChannels();
 
-  const { showModal } = useModal();
+  const { showModalWithoutControls } = useModal();
 
   const openCreateServerModal = () => {
-    showModal({
+    showModalWithoutControls({
       title: "서버 만들기",
       text: "",
       children: <CreateServerForm />,
@@ -63,7 +58,7 @@ const Sidebar = () => {
   };
 
   const openInviteServerModal = () => {
-    showModal({
+    showModalWithoutControls({
       title: "초대코드 입력",
       text: "",
       children: <InviteServerForm />,

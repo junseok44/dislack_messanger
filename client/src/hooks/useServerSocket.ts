@@ -2,7 +2,6 @@ import { Channel, getAllUserServersWithChannelsResponse } from "@/@types";
 import { QUERY_KEYS } from "@/constants/queryKeys";
 import { PAGE_ROUTE } from "@/constants/routeName";
 import { SOCKET_EVENTS, SOCKET_NAMESPACES } from "@/constants/sockets";
-import { useModal } from "@/contexts/ModalContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";

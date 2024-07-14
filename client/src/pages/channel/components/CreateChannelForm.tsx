@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { useModal } from "@/contexts/ModalContext";
 import { useParams } from "react-router-dom";
 import { useCreateChannel } from "../hooks";
+import useModal from "@/hooks/useModal";
 
 const CreateChannelForm = ({ serverId }: { serverId: number }) => {
   const [name, setName] = useState("");

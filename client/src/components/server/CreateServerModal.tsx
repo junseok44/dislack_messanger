@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useCreateServer } from "@/hooks/server";
-import { useModal } from "@/contexts/ModalContext";
+import useModal from "@/hooks/useModal";
 
 const CreateServerForm: React.FC = () => {
   const [name, setName] = useState("");

@@ -1,10 +1,10 @@
 import { memo } from "react";
 import { Channel, Server } from "@/@types";
-import { useModal } from "@/contexts/ModalContext";
 import { useDeleteServer } from "@/hooks/server";
 import CreateChannelForm from "./CreateChannelForm";
 import { useDeleteChannel } from "../hooks";
 import { useParams } from "react-router-dom";
+import useModal from "@/hooks/useModal";
 
 const ChannelSideBar = ({
   channels,
@@ -21,7 +21,8 @@ const ChannelSideBar = ({
 
   const { mutate: deleteChannel } = useDeleteChannel();
 
-  const { showModal, closeModal } = useModal();
+  const { showModalWithControls, showModalWithoutControls, closeModal } =
+    useModal();
 
   const { channelId } = useParams<{
     channelId: string;
@@ -30,10 +31,9 @@ const ChannelSideBar = ({
   const parsedChannelId = channelId ? parseInt(channelId) : undefined;
 
   const onClickDeleteServer = (id: number) => {
-    showModal({
+    showModalWithControls({
       title: "Delete Server",
       text: "Are you sure you want to delete this server?",
-      showControls: true,
       onConfirm: () => {
         mutate(id);
         closeModal();
@@ -42,9 +42,8 @@ const ChannelSideBar = ({
   };
 
   const onClickAddChannel = () => {
-    showModal({
+    showModalWithoutControls({
       title: "Create Channel",
-      showControls: false,
       children: <CreateChannelForm serverId={server.id} />,
     });
   };

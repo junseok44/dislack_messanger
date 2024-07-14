@@ -1,12 +1,11 @@
-import { useModal } from "@/contexts/ModalContext";
 import { useToast } from "@/contexts/ToastContext";
 import { useJoinServer } from "@/hooks/server";
+import useModal from "@/hooks/useModal";
 import React, { useState } from "react";
 
 const InviteServerForm: React.FC = () => {
   const [code, setCode] = useState("");
   const { closeModal } = useModal();
-  const { showToast } = useToast();
 
   const { mutate: joinServer } = useJoinServer({});
 
