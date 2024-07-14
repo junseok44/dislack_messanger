@@ -1,10 +1,11 @@
 import Navbar from "@/components/Navbar";
-import { API_ROUTE } from "@/constants/routeName";
+import { API_ROUTE, PAGE_ROUTE } from "@/constants/routeName";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { useMutation } from "@tanstack/react-query";
 import React from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
+import { Link } from "react-router-dom";
 
 interface LoginFormInputs {
   username: string;
@@ -47,9 +48,9 @@ const LoginPage: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <header className="bg-gray-100 dark:bg-gray-900 p-4 shadow-md">
-        <Navbar />
-      </header>
+      {/* <header className="bg-gray-100 dark:bg-gray-900 p-4 shadow-md"> */}
+      {/* <Navbar /> */}
+      {/* </header> */}
       <main className="flex-grow bg-gray-50 dark:bg-gray-800 p-4">
         <div className="container mx-auto mt-10 flex flex-col items-center">
           <h2 className="text-4xl font-bold mb-8">Login</h2>
@@ -101,6 +102,12 @@ const LoginPage: React.FC = () => {
               >
                 {isSubmitting ? "Loading..." : "Login"}
               </button>
+              <div className="flex">
+                <p>계정이 없으신가요?</p>
+                <Link to={PAGE_ROUTE.REGISTER} className="text-blue-500 ml-1">
+                  Register
+                </Link>
+              </div>
             </div>
           </form>
         </div>

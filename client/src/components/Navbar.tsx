@@ -1,129 +1,136 @@
 import { PAGE_ROUTE } from "@/constants/routeName";
 import { useAuth } from "@/contexts/AuthContext";
-import {
-  Box,
-  Flex,
-  HStack,
-  Button,
-  useColorMode,
-  useColorModeValue,
-  IconButton,
-  Stack,
-  useDisclosure,
-} from "@chakra-ui/react";
-import { HamburgerIcon, CloseIcon, SunIcon, MoonIcon } from "@chakra-ui/icons";
-
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import Container from "./Container";
+// import { SunIcon, MoonIcon, MenuIcon, XIcon } from "@heroicons/react/solid";
 
 const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [isOpen, setIsOpen] = useState(false);
+  const [colorMode, setColorMode] = useState("light");
 
-  const { colorMode, toggleColorMode } = useColorMode();
+  const toggleColorMode = () => {
+    setColorMode(colorMode === "light" ? "dark" : "light");
+    if (document.documentElement.classList.contains("dark")) {
+      document.documentElement.classList.remove("dark");
+    } else {
+      document.documentElement.classList.add("dark");
+    }
+  };
 
-  const bg = useColorModeValue("gray.100", "gray.900");
-  const color = useColorModeValue("black", "white");
+  const bg =
+    colorMode === "light"
+      ? "bg-background-light-subtle"
+      : "bg-background-dark-subtle";
+  const color =
+    colorMode === "light"
+      ? "text-text-light-default"
+      : "text-text-dark-default";
+  const buttonBg =
+    colorMode === "light" ? "bg-secondary-light" : "bg-secondary-dark";
+  const buttonTextColor =
+    colorMode === "light"
+      ? "text-text-light-default"
+      : "text-text-dark-default";
 
   return (
-    <Box bg={bg} boxShadow="md">
+    <div className={`${bg} shadow-md`}>
       <Container>
-        <Flex h={16} alignItems={"center"} justifyContent={"space-between"}>
-          <IconButton
-            size={"md"}
-            icon={isOpen ? <CloseIcon /> : <HamburgerIcon />}
-            aria-label={"Open Menu"}
-            display={{ md: "none" }}
-            onClick={isOpen ? onClose : onOpen}
-          />
-          <HStack spacing={8} alignItems={"center"}>
-            <Box fontWeight="bold" fontSize="xl" color={color}>
+        <div className="flex h-16 items-center justify-between">
+          <button
+            className="md:hidden"
+            aria-label="Open Menu"
+            onClick={() => setIsOpen(!isOpen)}
+          >
+            {/* {isOpen ? (
+              <XIcon className="h-6 w-6" />
+            ) : (
+              <MenuIcon className="h-6 w-6" />
+            )} */}
+          </button>
+          <div className="flex items-center space-x-8">
+            <div className={`font-bold text-xl ${color}`}>
               <Link to={PAGE_ROUTE.HOME}>MyApp</Link>
-            </Box>
-            <HStack
-              as={"nav"}
-              spacing={4}
-              display={{ base: "none", md: "flex" }}
-              alignItems={"center"}
-            >
+            </div>
+            <nav className="hidden md:flex space-x-4 items-center">
               {!user && (
                 <>
                   <Link to={PAGE_ROUTE.LOGIN}>
-                    <Button variant="link" color={color}>
-                      Login
-                    </Button>
+                    <button className={`text-sm ${color}`}>Login</button>
                   </Link>
                   <Link to={PAGE_ROUTE.REGISTER}>
-                    <Button variant="solid" colorScheme="teal" size="sm">
-                      Register
-                    </Button>
-                  </Link>
-                </>
-              )}
-              {user && (
-                <Button
-                  variant="solid"
-                  colorScheme="teal"
-                  size="sm"
-                  onClick={() => {
-                    logout();
-                  }}
-                >
-                  Logout
-                </Button>
-              )}
-            </HStack>
-          </HStack>
-          <Flex alignItems={"center"}>
-            <IconButton
-              aria-label="Toggle Color Mode"
-              icon={colorMode === "light" ? <MoonIcon /> : <SunIcon />}
-              onClick={toggleColorMode}
-              mr={2}
-            />
-          </Flex>
-        </Flex>
-        {isOpen ? (
-          <Box pb={4} display={{ md: "none" }}>
-            <Stack as={"nav"} spacing={4}>
-              {!user && (
-                <>
-                  <Link to={PAGE_ROUTE.LOGIN}>
-                    <Button variant="link" color={color} onClick={onClose}>
-                      Login
-                    </Button>
-                  </Link>
-                  <Link to={PAGE_ROUTE.REGISTER}>
-                    <Button
-                      variant="solid"
-                      colorScheme="teal"
-                      size="sm"
-                      onClick={onClose}
+                    <button
+                      className={`text-sm ${buttonBg} ${buttonTextColor} px-3 py-1 rounded-md`}
                     >
                       Register
-                    </Button>
+                    </button>
                   </Link>
                 </>
               )}
               {user && (
-                <Button
-                  variant="solid"
-                  colorScheme="teal"
-                  size="sm"
+                <button
+                  className={`text-sm ${buttonBg} ${buttonTextColor} px-3 py-1 rounded-md`}
+                  onClick={() => logout()}
+                >
+                  Logout
+                </button>
+              )}
+            </nav>
+          </div>
+          <div className="flex items-center">
+            <button
+              aria-label="Toggle Color Mode"
+              onClick={toggleColorMode}
+              className="mr-2"
+            >
+              {/* {colorMode === "light" ? (
+                <MoonIcon className="h-6 w-6" />
+              ) : (
+                <SunIcon className="h-6 w-6" />
+              )} */}
+            </button>
+          </div>
+        </div>
+        {isOpen && (
+          <div className="md:hidden pb-4">
+            <nav className="space-y-4">
+              {!user && (
+                <>
+                  <Link to={PAGE_ROUTE.LOGIN}>
+                    <button
+                      className={`block w-full text-left ${color}`}
+                      onClick={() => setIsOpen(false)}
+                    >
+                      Login
+                    </button>
+                  </Link>
+                  <Link to={PAGE_ROUTE.REGISTER}>
+                    <button
+                      className={`block w-full text-left ${buttonBg} ${buttonTextColor} px-3 py-1 rounded-md`}
+                      onClick={() => setIsOpen(false)}
+                    >
+                      Register
+                    </button>
+                  </Link>
+                </>
+              )}
+              {user && (
+                <button
+                  className={`block w-full text-left ${buttonBg} ${buttonTextColor} px-3 py-1 rounded-md`}
                   onClick={() => {
                     logout();
-                    onClose();
+                    setIsOpen(false);
                   }}
                 >
                   Logout
-                </Button>
+                </button>
               )}
-            </Stack>
-          </Box>
-        ) : null}
+            </nav>
+          </div>
+        )}
       </Container>
-    </Box>
+    </div>
   );
 };
 
