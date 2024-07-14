@@ -17,8 +17,7 @@ const ChannelSideBar = ({
   onClickChannels: (channelId: number) => void;
   userId?: number;
 }) => {
-  const { mutate } = useDeleteServer();
-
+  const { mutate: deleteServer } = useDeleteServer();
   const { mutate: deleteChannel } = useDeleteChannel();
 
   const { showModalWithControls, showModalWithoutControls, closeModal } =
@@ -35,7 +34,7 @@ const ChannelSideBar = ({
       title: "Delete Server",
       text: "Are you sure you want to delete this server?",
       onConfirm: () => {
-        mutate(id);
+        deleteServer(id);
         closeModal();
       },
     });

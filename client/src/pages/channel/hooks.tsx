@@ -5,6 +5,9 @@ import {
   MessageWithAuthor,
 } from "@/@types";
 import { API_ROUTE } from "@/constants/routeName";
+import { SOCKET_EVENTS, SOCKET_NAMESPACES } from "@/constants/sockets";
+import { useAuth } from "@/contexts/AuthContext";
+import useToast from "@/hooks/useToast";
 import { ApiError } from "@/lib/api";
 import {
   InfiniteData,
@@ -13,26 +16,21 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
+import { produce } from "immer";
+import { useEffect, useRef } from "react";
+import { io, Socket } from "socket.io-client";
 import {
   createChannel,
   deleteChannel,
   fetchMessages,
   sendMessage,
 } from "./api";
-import { produce } from "immer";
-import { useEffect, useRef } from "react";
-import { SOCKET_EVENTS, SOCKET_NAMESPACES } from "@/constants/sockets";
-import { io, Socket } from "socket.io-client";
-import { useAuth } from "@/contexts/AuthContext";
-import { QUERY_KEYS } from "@/constants/queryKeys";
-import useToast from "@/hooks/useToast";
 
-export const useChannelSocket = (
-  channelId: string | undefined,
-  parsedChannelId: number | undefined
-) => {
+export const useChannelSocket = (channelId: string | undefined) => {
   const queryClient = useQueryClient();
   const socketRef = useRef<Socket | null>(null);
+
+  const parsedChannelId = channelId ? parseInt(channelId) : undefined;
 
   useEffect(() => {
     if (!parsedChannelId) {
@@ -91,7 +89,7 @@ export const useChannelSocket = (
       socketRef.current = null;
       socket.disconnect();
     };
-  }, [channelId, queryClient]);
+  }, [channelId, parsedChannelId, queryClient]);
 };
 
 export const useMessages = (channelId: number | undefined) => {

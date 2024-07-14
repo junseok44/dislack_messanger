@@ -1,9 +1,7 @@
 import { delay } from "@/utils/delay";
 import { useEffect, useRef, RefObject } from "react";
 
-const useAutoScroll = <T extends HTMLElement>(
-  dependency: any[]
-): {
+const useAutoScroll = <T extends HTMLElement>(): {
   endRef: RefObject<T>;
   scrollToBottom: () => void;
 } => {

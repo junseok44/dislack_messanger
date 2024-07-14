@@ -1,16 +1,12 @@
 import { PAGE_ROUTE } from "@/constants/routeName";
-import { SOCKET_NAMESPACES } from "@/constants/sockets";
-import {
-  useGetUserServersWithChannels,
-  useUserServersWithChannels,
-} from "@/hooks/server";
-import useAutoScroll from "@/hooks/useAutoScroll";
-import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { io } from "socket.io-client";
-import ChannelSideBar from "./components/ChannelSideBar";
-import { useChannelSocket, useMessages, useSendMessage } from "./hooks";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserServersWithChannels } from "@/hooks/server";
+import useAutoScroll from "@/hooks/useAutoScroll";
+import { useNavigate, useParams } from "react-router-dom";
+import ChannelSideBar from "./components/ChannelSideBar";
+import MessageInput from "./components/MessageInput";
+import MessageList from "./components/MessageList";
+import { useChannelSocket } from "./hooks";
 
 const Channel = () => {
   const { data: allServers } = useUserServersWithChannels();
@@ -20,28 +16,14 @@ const Channel = () => {
   }>();
   const navigate = useNavigate();
 
-  const [messageContent, setMessageContent] = useState<string>("");
-
   const parsedChannelId = channelId ? parseInt(channelId) : undefined;
-
-  const {
-    data: messageData,
-    hasNextPage,
-    fetchNextPage,
-  } = useMessages(parsedChannelId);
 
   const { user } = useAuth();
 
-  const { mutate: sendMessage } = useSendMessage();
+  const { endRef: listEndRef, scrollToBottom } =
+    useAutoScroll<HTMLDivElement>();
 
-  const allMessages =
-    messageData?.pages.flatMap((page) => page.messages).reverse() || [];
-
-  const { endRef: listEndRef, scrollToBottom } = useAutoScroll<HTMLDivElement>([
-    allMessages.length,
-  ]);
-
-  useChannelSocket(channelId, parsedChannelId);
+  useChannelSocket(channelId);
 
   if (!serverId || !parsedChannelId) {
     return <div>loading...</div>;
@@ -69,23 +51,6 @@ const Channel = () => {
     return <div>channel not found...</div>;
   }
 
-  const handleSendMessage = () => {
-    if (messageContent.trim() === "") return;
-    sendMessage({
-      channelId: parsedChannelId!,
-      content: messageContent,
-      tempId: Math.random(),
-      authorId: user?.id!,
-    });
-    setMessageContent("");
-  };
-
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    handleSendMessage();
-    scrollToBottom();
-  };
-
   return (
     <div className="flex-grow h-full flex max-h-screen">
       <ChannelSideBar
@@ -97,40 +62,14 @@ const Channel = () => {
       <div className="flex-grow h-full bg-background-dark">
         <div className="flex flex-col h-full">
           <h1>{currentChannel.name} 채널입니다.</h1>
-          <ul className="flex-grow overflow-auto">
-            {allMessages?.map((message, index) => (
-              <li
-                key={message.id}
-                className={`${message.isTemp ? `text-warning-light` : ``}`}
-              >
-                {allMessages[index - 1]?.authorId == message.authorId ? (
-                  <div className="flex">
-                    <div className="w-32"></div>
-                    <div>{message.content}</div>
-                  </div>
-                ) : (
-                  <div className="flex">
-                    <div className="w-32">{message.author.username}</div>
-                    <div>{message.content}</div>
-                  </div>
-                )}
-              </li>
-            ))}
-            <div ref={listEndRef} />
-          </ul>
-          <form onSubmit={handleSubmit} className="h-12">
-            <input
-              type="text"
-              value={messageContent}
-              onChange={(e) => setMessageContent(e.target.value)}
-              placeholder="Enter your message"
-              className="text-black"
-            />
-            <button type="submit">Send Message</button>
-            {hasNextPage && (
-              <button onClick={() => fetchNextPage()}>Load More</button>
-            )}
-          </form>
+          <MessageList
+            listEndRef={listEndRef}
+            parsedChannelId={parsedChannelId}
+          />
+          <MessageInput
+            scrollToBottom={scrollToBottom}
+            parsedChannelId={parsedChannelId}
+          />
         </div>
       </div>
     </div>

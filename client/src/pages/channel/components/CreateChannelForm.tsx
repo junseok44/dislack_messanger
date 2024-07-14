@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { useParams } from "react-router-dom";
 import { useCreateChannel } from "../hooks";
 import useModal from "@/hooks/useModal";
 

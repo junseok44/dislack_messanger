@@ -1,6 +1,4 @@
-import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Box, Button, Text, VStack } from "@chakra-ui/react";
 
 const NotFound = () => {
   const navigate = useNavigate();
