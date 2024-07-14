@@ -28,5 +28,15 @@ export const useModalStore = create<ModalState>((set) => ({
       isOpen: true,
       ...options,
     }),
-  closeModal: () => set({ isOpen: false, showControls: true }),
+  closeModal: () => {
+    return set({
+      isOpen: false,
+      showControls: true,
+      title: "",
+      text: "",
+      onConfirm: undefined,
+      onRequestClose: undefined,
+      children: null,
+    });
+  },
 }));

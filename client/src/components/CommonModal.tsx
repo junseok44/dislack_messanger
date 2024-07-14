@@ -25,10 +25,15 @@ const CommonModal: React.FC = () => {
     ));
   };
 
+  const handleCloseModal = () => {
+    onRequestClose && onRequestClose();
+    closeModal();
+  };
+
   return (
     <Modal
       isOpen={isOpen}
-      onRequestClose={onRequestClose || closeModal}
+      onRequestClose={handleCloseModal}
       contentLabel={title}
       overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
       className="bg-background-light-subtle dark:bg-background-dark-subtle p-6 rounded-lg max-w-sm mx-auto"
@@ -46,7 +51,7 @@ const CommonModal: React.FC = () => {
         <div className="flex justify-end">
           {onRequestClose && (
             <button
-              onClick={onRequestClose || closeModal}
+              onClick={handleCloseModal}
               className="mr-4 bg-gray-500 text-white py-2 px-4 rounded-md"
             >
               Cancel
