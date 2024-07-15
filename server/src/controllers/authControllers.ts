@@ -6,6 +6,10 @@ import tokenConfig, { getTokenCookieOption } from "../config/token";
 import { generateAccessToken, generateRefreshToken } from "../utils/token";
 import { z } from "zod";
 import { ERROR_CODES } from "../constants/errorCode";
+import {
+  formatErrorResponse,
+  formatSuccessResponse,
+} from "../utils/formatResponse";
 
 const userSchema = z.object({
   username: z.string().min(3).max(50),
@@ -20,27 +24,41 @@ export const register = async (req: Request, res: Response) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // FIXME: 이미 존재하는 유저인지 확인해야 함
+    const existingUser = await prisma.user.findUnique({ where: { username } });
+
+    if (existingUser) {
+      return res
+        .status(400)
+        .json(
+          formatErrorResponse(
+            ERROR_CODES.USER_ALREADY_EXISTS,
+            "User already exists"
+          )
+        );
+    }
 
     await prisma.user.create({
       data: { username, password: hashedPassword },
     });
-    res.status(201).json({ message: "User registered successfully" });
+
+    res.status(201).json(formatSuccessResponse("User registered successfully"));
   } catch (error) {
     console.log(error);
 
     if (error instanceof z.ZodError) {
-      return res.status(400).json({
-        errorCode: ERROR_CODES.INVALID_FORM,
-        message: "Invalid request",
-        details: error.errors,
-      });
+      return res
+        .status(400)
+        .json(formatErrorResponse(ERROR_CODES.INVALID_FORM, "Invalid request"));
     }
 
-    res.status(500).json({
-      errorCode: ERROR_CODES.INTERNAL_SERVER_ERROR,
-      message: "Internal Server Error",
-    });
+    res
+      .status(500)
+      .json(
+        formatErrorResponse(
+          ERROR_CODES.INTERNAL_SERVER_ERROR,
+          "Internal Server Error"
+        )
+      );
   }
 };
 
@@ -52,19 +70,23 @@ export const login = async (req: Request, res: Response) => {
 
     const user = await prisma.user.findUnique({ where: { username } });
 
-    if (!user)
-      return res.status(400).json({
-        errorCode: ERROR_CODES.USER_NOT_FOUND,
-        message: "User doesn't exist",
-      });
+    if (!user) {
+      return res
+        .status(400)
+        .json(
+          formatErrorResponse(ERROR_CODES.USER_NOT_FOUND, "User doesn't exist")
+        );
+    }
 
     const validPassword = await bcrypt.compare(password, user.password);
 
-    if (!validPassword)
-      return res.status(400).json({
-        errorCode: ERROR_CODES.INVALID_PASSWORD,
-        message: "Invalid password",
-      });
+    if (!validPassword) {
+      return res
+        .status(400)
+        .json(
+          formatErrorResponse(ERROR_CODES.INVALID_PASSWORD, "Invalid password")
+        );
+    }
 
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
@@ -77,39 +99,47 @@ export const login = async (req: Request, res: Response) => {
       ...getTokenCookieOption("refreshToken"),
     });
 
-    res.json({
-      message: "Logged in successfully",
-      user: {
-        username: user.username,
-        id: user.id,
-      },
-    });
+    res.json(
+      formatSuccessResponse("Logged in successfully", {
+        user: {
+          username: user.username,
+          id: user.id,
+        },
+      })
+    );
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json({
-        errorCode: ERROR_CODES.INVALID_FORM,
-        message: "Invalid request",
-        details: error.errors,
-      });
+      return res
+        .status(400)
+        .json(formatErrorResponse(ERROR_CODES.INVALID_FORM, "Invalid request"));
     }
 
     console.log(error);
 
-    res.status(500).json({
-      errorCode: ERROR_CODES.INTERNAL_SERVER_ERROR,
-      message: "Internal Server Error",
-    });
+    res
+      .status(500)
+      .json(
+        formatErrorResponse(
+          ERROR_CODES.INTERNAL_SERVER_ERROR,
+          "Internal Server Error"
+        )
+      );
   }
 };
 
 export const refreshToken = async (req: Request, res: Response) => {
   const refreshToken = req.cookies.refreshToken;
 
-  if (!refreshToken)
-    return res.sendStatus(401).json({
-      errorCode: ERROR_CODES.UNAUTHORIZED,
-      message: "No refresh token provided",
-    });
+  if (!refreshToken) {
+    return res
+      .status(401)
+      .json(
+        formatErrorResponse(
+          ERROR_CODES.UNAUTHORIZED,
+          "No refresh token provided"
+        )
+      );
+  }
 
   try {
     const decoded = jwt.verify(
@@ -118,11 +148,12 @@ export const refreshToken = async (req: Request, res: Response) => {
     ) as jwt.JwtPayload;
 
     const user = await prisma.user.findUnique({ where: { id: decoded.id } });
-    if (!user)
-      return res.status(403).json({
-        errorCode: ERROR_CODES.FORBIDDEN,
-        message: "User not found",
-      });
+
+    if (!user) {
+      return res
+        .status(403)
+        .json(formatErrorResponse(ERROR_CODES.FORBIDDEN, "User not found"));
+    }
 
     const newAccessToken = generateAccessToken(user);
 
@@ -133,21 +164,28 @@ export const refreshToken = async (req: Request, res: Response) => {
       maxAge: 15 * 60 * 1000, // 15분
     });
 
-    res.json({ accessToken: newAccessToken });
+    res.json(
+      formatSuccessResponse("New access token generated", {
+        accessToken: newAccessToken,
+      })
+    );
   } catch (error) {
-    res.status(403).json({
-      errorCode: ERROR_CODES.INVALID_REFRESH_TOKEN,
-      message: "Invalid Refresh Token",
-    });
+    res
+      .status(403)
+      .json(
+        formatErrorResponse(
+          ERROR_CODES.INVALID_REFRESH_TOKEN,
+          "Invalid Refresh Token"
+        )
+      );
   }
 };
 
 export const checkAuth = async (req: Request, res: Response) => {
   if (!req.user) {
-    return res.status(403).json({
-      errorCode: ERROR_CODES.FORBIDDEN,
-      message: "Invalid access token",
-    });
+    return res
+      .status(403)
+      .json(formatErrorResponse(ERROR_CODES.FORBIDDEN, "Invalid access token"));
   }
 
   try {
@@ -159,18 +197,24 @@ export const checkAuth = async (req: Request, res: Response) => {
       },
     });
 
-    if (!user)
-      return res.status(403).json({
-        errorCode: ERROR_CODES.FORBIDDEN,
-        message: "Invalid access token",
-      });
+    if (!user) {
+      return res
+        .status(403)
+        .json(
+          formatErrorResponse(ERROR_CODES.FORBIDDEN, "Invalid access token")
+        );
+    }
 
-    res.json({ isAuthenticated: true, user });
+    res.json(
+      formatSuccessResponse("Authenticated successfully", {
+        isAuthenticated: true,
+        user,
+      })
+    );
   } catch (error) {
-    res.status(403).json({
-      errorCode: ERROR_CODES.FORBIDDEN,
-      message: "Invalid access token",
-    });
+    res
+      .status(403)
+      .json(formatErrorResponse(ERROR_CODES.FORBIDDEN, "Invalid access token"));
   }
 };
 
@@ -185,5 +229,5 @@ export const logout = (req: Request, res: Response) => {
     expires: new Date(0),
   });
 
-  res.json({ message: "Logged out successfully" });
+  res.json(formatSuccessResponse("Logged out successfully"));
 };

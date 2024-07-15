@@ -1,5 +1,6 @@
 import Navbar from "@/components/Navbar";
 import { API_ROUTE, PAGE_ROUTE } from "@/constants/routeName";
+import useToast from "@/hooks/useToast";
 import { api } from "@/lib/api";
 import { useMutation } from "@tanstack/react-query";
 import React from "react";
@@ -23,16 +24,21 @@ const RegisterPage: React.FC = () => {
 
   const navigate = useNavigate();
 
+  const { showToast } = useToast();
+
   const {
     mutate: registerUser,
     isError,
     error,
-    isSuccess,
   } = useMutation({
     mutationFn: (data: { username: string; password: string }) =>
       api.post(API_ROUTE.AUTH.REGISTER, data),
     onSuccess: () => {
       reset();
+      showToast({
+        message: `회원가입이 완료되었습니다! 로그인해주세요.`,
+        type: "success",
+      });
       navigate("/login");
     },
     onError: (error) => {},

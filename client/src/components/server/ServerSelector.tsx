@@ -6,6 +6,7 @@ import InviteServerForm from "./InviteServerModal";
 import useModal from "@/hooks/useModal";
 import { ServerResponse } from "@/@types";
 import { hasNewMessageOnChannel } from "@/utils/hasNewMessageOnChannel";
+import { useAuth } from "@/contexts/AuthContext";
 
 const SidebarButton = ({
   icon,
@@ -55,6 +56,8 @@ const Sidebar = () => {
   };
 
   const { data } = useUserServersWithChannels();
+
+  const { logout } = useAuth();
 
   const { showModalWithoutControls } = useModal();
 
@@ -112,6 +115,11 @@ const Sidebar = () => {
         icon="home"
         text="초대"
         onClick={openInviteServerModal}
+      ></SidebarButton>
+      <SidebarButton
+        icon="home"
+        text="로그아웃"
+        onClick={() => logout()}
       ></SidebarButton>
     </div>
   );

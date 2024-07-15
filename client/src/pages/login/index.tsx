@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import { API_ROUTE, PAGE_ROUTE } from "@/constants/routeName";
 import { useAuth } from "@/contexts/AuthContext";
+import useToast from "@/hooks/useToast";
 import { api } from "@/lib/api";
 import { useMutation } from "@tanstack/react-query";
 import React from "react";
@@ -26,6 +27,8 @@ const LoginPage: React.FC = () => {
 
   const { login } = useAuth();
 
+  const { showToast } = useToast();
+
   const {
     mutate: loginUser,
     isError,
@@ -34,8 +37,16 @@ const LoginPage: React.FC = () => {
     mutationFn: (data: { username: string; password: string }) =>
       api.post(API_ROUTE.AUTH.LOGIN, data),
 
-    onSuccess: (data) => {
-      login(data.user);
+    onSuccess: (response: {
+      data: {
+        user: { username: string; id: number };
+      };
+    }) => {
+      showToast({
+        message: `어서오세요, ${response.data.user.username}님!`,
+        type: "success",
+      });
+      login(response.data.user);
     },
     onError: (error) => {
       console.log(error);

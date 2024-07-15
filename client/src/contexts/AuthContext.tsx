@@ -73,13 +73,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     onSettled: () => {
       setAuthLoading(false);
     },
-    onSuccess: (data: {
-      user: {
-        username: string;
-        id: number;
+    onSuccess: (response: {
+      data: {
+        user: {
+          username: string;
+          id: number;
+        };
       };
     }) => {
-      login(data.user);
+      login(response.data.user);
       setAuthError(false);
     },
   });
