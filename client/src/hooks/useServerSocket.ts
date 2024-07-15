@@ -65,8 +65,6 @@ export const useServerSocket = () => {
 
   const handleDeleteChannel = useCallback(
     ({ serverId, channelId }: { serverId: number; channelId: number }) => {
-      console.log("Channel deleted:", channelId);
-
       queryClient.setQueryData<getAllUserServersWithChannelsResponse>(
         QUERY_KEYS.USER_SERVERS_WITH_CHANNELS,
         (data) => {
@@ -90,21 +88,6 @@ export const useServerSocket = () => {
           return updatedData;
         }
       );
-
-      if (currentChannelId === channelId) {
-        navigate(PAGE_ROUTE.CHANNELS_ME);
-        // showModal({
-        //   title: "채널 삭제됨",
-        //   text: "현재 채널이 삭제되었습니다. 홈으로 이동합니다.",
-        //   showControls: true,
-        //   onConfirm: () => {
-        //     navigate(PAGE_ROUTE.CHANNELS_ME);
-        //   },
-        //   onRequestClose: () => {
-        //     navigate(PAGE_ROUTE.CHANNELS_ME);
-        //   },
-        // });
-      }
     },
     [queryClient, currentChannelId, navigate]
   );
@@ -112,21 +95,6 @@ export const useServerSocket = () => {
   const handleDeleteServer = useCallback(
     ({ serverId }: { serverId: number }) => {
       console.log("Server deleted:", serverId, currentServerId);
-
-      if (currentServerId === serverId) {
-        navigate(PAGE_ROUTE.CHANNELS_ME);
-        // showModal({
-        //   title: "서버 삭제됨",
-        //   text: "현재 서버가 삭제되었습니다. 홈으로 이동합니다.",
-        //   showControls: true,
-        //   onConfirm: () => {
-        //     navigate(PAGE_ROUTE.CHANNELS_ME);
-        //   },
-        //   onRequestClose: () => {
-        //     navigate(PAGE_ROUTE.CHANNELS_ME);
-        //   },
-        // });
-      }
 
       queryClient.setQueryData<getAllUserServersWithChannelsResponse>(
         QUERY_KEYS.USER_SERVERS_WITH_CHANNELS,
