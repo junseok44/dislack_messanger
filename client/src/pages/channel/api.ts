@@ -23,13 +23,23 @@ export const sendMessage = async ({
   channelId,
   content,
   tempId,
+  serverId,
 }: {
   channelId: number;
+  serverId: number;
   content: string;
   tempId: number;
 }) => {
   return api.post(API_ROUTE.MESSAGES.POST(channelId), {
     content,
+    serverId,
     tempId,
   });
+};
+
+export const updateLastSeenMessage = async (channelId: number | string) => {
+  return await api.patch(
+    API_ROUTE.MESSAGES.UPDATE_LAST_SEEN_MESSAGE(channelId),
+    {}
+  );
 };

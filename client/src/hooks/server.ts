@@ -41,8 +41,6 @@ export const useCreateServer = ({
 };
 
 export const useDeleteServer = () => {
-  const queryClient = useQueryClient();
-
   const { showToast } = useToast();
 
   return useMutation<unknown, ApiError, number>({

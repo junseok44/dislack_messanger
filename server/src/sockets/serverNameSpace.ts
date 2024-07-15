@@ -72,15 +72,16 @@ export const initializeServerNamespace = (io: Server) => {
     // Update the last message ID of a channel
     socket.on(
       SOCKET_EVENTS.SERVER.CHANNEL_UPDATE_LAST_MESSAGE_ID,
-      (channelId, messageId) => {
+      ({ channelId, messageId, serverId }) => {
         console.log(
           `Channel ${channelId} last message id updated: ${messageId}`
         );
         serverNamespace
-          .to(`channel_${channelId}`)
+          .to(`server_${serverId}`)
           .emit(SOCKET_EVENTS.SERVER.CHANNEL_UPDATE_LAST_MESSAGE_ID, {
             channelId,
             messageId,
+            serverId,
           });
       }
     );

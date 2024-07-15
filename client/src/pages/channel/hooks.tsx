@@ -1,6 +1,7 @@
 import {
   CreateMessageResponse,
   getAllMessagesResponse,
+  getAllUserServersWithChannelsResponse,
   Message,
   MessageWithAuthor,
 } from "@/@types";
@@ -24,7 +25,9 @@ import {
   deleteChannel,
   fetchMessages,
   sendMessage,
+  updateLastSeenMessage,
 } from "./api";
+import { QUERY_KEYS } from "@/constants/queryKeys";
 
 export const useChannelSocket = (channelId: string | undefined) => {
   const queryClient = useQueryClient();
@@ -131,7 +134,13 @@ export const useSendMessage = () => {
   return useMutation<
     Message,
     ApiError,
-    { channelId: number; content: string; tempId: number; authorId: number },
+    {
+      channelId: number;
+      content: string;
+      tempId: number;
+      authorId: number;
+      serverId: number;
+    },
     {
       previousMessages:
         | InfiniteData<{
@@ -253,6 +262,39 @@ export const useDeleteChannel = () => {
           type: "error",
         });
       }
+    },
+  });
+};
+
+export const useUpdateLastSeenMessage = () => {
+  const queryClient = useQueryClient();
+  const { showToast } = useToast();
+
+  return useMutation<unknown, Error, { channelId: number | string }>({
+    mutationFn: ({ channelId }) => updateLastSeenMessage(channelId),
+    onSuccess: async (_, { channelId }) => {
+      queryClient.setQueryData<getAllUserServersWithChannelsResponse>(
+        QUERY_KEYS.USER_SERVERS_WITH_CHANNELS,
+        (data) => {
+          if (!data) return data;
+          return produce(data, (draft) => {
+            draft.forEach((server) => {
+              server.channels.forEach((channel) => {
+                if (channel.id === channelId) {
+                  channel.lastSeenMessageId = channel.lastMessageId;
+                }
+              });
+            });
+          });
+        }
+      );
+    },
+    onError: (error) => {
+      console.error("Failed to update last seen message:", error);
+      showToast({
+        message: error.message,
+        type: "error",
+      });
     },
   });
 };

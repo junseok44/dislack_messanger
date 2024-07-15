@@ -1,10 +1,11 @@
-import { memo } from "react";
-import { Channel, Server } from "@/@types";
+import { ChannelResponse, Server } from "@/@types";
 import { useDeleteServer } from "@/hooks/server";
-import CreateChannelForm from "./CreateChannelForm";
-import { useDeleteChannel } from "../hooks";
-import { useParams } from "react-router-dom";
 import useModal from "@/hooks/useModal";
+import { hasNewMessageOnChannel } from "@/utils/hasNewMessageOnChannel";
+import { memo } from "react";
+import { useParams } from "react-router-dom";
+import { useDeleteChannel } from "../hooks";
+import CreateChannelForm from "./CreateChannelForm";
 
 const ChannelSideBar = ({
   channels,
@@ -12,7 +13,7 @@ const ChannelSideBar = ({
   onClickChannels,
   userId,
 }: {
-  channels: Channel[];
+  channels: ChannelResponse[];
   server: Pick<Server, "id" | "name" | "inviteCode" | "ownerId">;
   onClickChannels: (channelId: number) => void;
   userId?: number;
@@ -76,27 +77,35 @@ const ChannelSideBar = ({
         </div>
       )}
 
-      {channels.map((channel) => (
-        <div
-          key={channel.id}
-          className={`h-12 bg-secondary-dark flex items-center cursor-pointer justify-between ${getCurrentChannelStyle(
-            channel.id
-          )}`}
-          onClick={() => onClickChannels(channel.id)}
-        >
-          {channel.name}
-          {server.ownerId === userId && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDeleteChannel(channel.id);
-              }}
-            >
-              채널 삭제
-            </button>
-          )}
-        </div>
-      ))}
+      {channels.map((channel) => {
+        return (
+          <div
+            key={channel.id}
+            className={`h-12 bg-secondary-dark flex items-center cursor-pointer justify-between ${getCurrentChannelStyle(
+              channel.id
+            )}`}
+            onClick={() => onClickChannels(channel.id)}
+          >
+            <div className="flex items-center gap-4">
+              {hasNewMessageOnChannel(
+                channel.lastMessageId,
+                channel.lastSeenMessageId
+              ) && <div className="w-2 h-2 bg-green-500 rounded-full" />}
+              <span>{channel.name}</span>
+            </div>
+            {server.ownerId === userId && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteChannel(channel.id);
+                }}
+              >
+                채널 삭제
+              </button>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 };

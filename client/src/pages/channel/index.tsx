@@ -69,6 +69,7 @@ const Channel = () => {
           <MessageInput
             scrollToBottom={scrollToBottom}
             parsedChannelId={parsedChannelId}
+            parsedServerId={currentServer.id}
           />
         </div>
       </div>

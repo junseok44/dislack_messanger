@@ -75,8 +75,10 @@ model LastSeenMessageOnChannel {
   id        Int     @id @default(autoincrement())
   userId    Int
   channelId Int
-  messageId Int
+  messageId Int?
 
   user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   channel  Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, channelId], name : "unique_user_channel")
 }

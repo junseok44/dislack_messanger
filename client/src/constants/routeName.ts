@@ -35,5 +35,7 @@ export const API_ROUTE = {
   MESSAGES: {
     GET: (channelId: number | string) => `/channels/${channelId}/messages`,
     POST: (channelId: number | string) => `/channels/${channelId}/messages`,
+    UPDATE_LAST_SEEN_MESSAGE: (channelId: number | string) =>
+      `/channels/${channelId}/last-seen-message`,
   },
 };

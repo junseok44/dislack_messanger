@@ -145,11 +145,30 @@ export const getUserServersWithChannels = async (
         OR: [{ ownerId: userId }, { members: { some: { id: userId } } }],
       },
       include: {
-        channels: true,
+        channels: {
+          include: {
+            lastSeenMessages: {
+              where: { userId },
+              select: { messageId: true },
+            },
+          },
+        },
       },
     });
 
-    res.status(200).json(servers);
+    const serversWithLastSeenMessage = servers.map((server) => ({
+      ...server,
+      channels: server.channels.map((channel) => {
+        const lastSeenMessage = channel.lastSeenMessages[0];
+        const { lastSeenMessages, ...channelWithoutLastSeenMessages } = channel;
+        return {
+          ...channelWithoutLastSeenMessages,
+          lastSeenMessageId: lastSeenMessage ? lastSeenMessage.messageId : null,
+        };
+      }),
+    }));
+
+    res.status(200).json(serversWithLastSeenMessage);
   } catch (error) {
     console.log(error);
 

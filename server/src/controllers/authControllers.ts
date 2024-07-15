@@ -20,6 +20,8 @@ export const register = async (req: Request, res: Response) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // FIXME: 이미 존재하는 유저인지 확인해야 함
+
     await prisma.user.create({
       data: { username, password: hashedPassword },
     });

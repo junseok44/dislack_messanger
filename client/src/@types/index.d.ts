@@ -4,7 +4,13 @@ export interface Channel {
   ownerId: number;
   protected: boolean;
   serverId: number;
+  lastMessageId: number | null;
 }
+
+export interface ChannelResponse extends Channel {
+  lastSeenMessageId: number | null;
+}
+1;
 
 export interface Server {
   id: number;
@@ -12,7 +18,7 @@ export interface Server {
   ownerId: number;
   created_at: string;
   inviteCode: string;
-  channels: Channel[];
+  channels: ChannelResponse[];
 }
 
 export type ServerResponse = Pick<
