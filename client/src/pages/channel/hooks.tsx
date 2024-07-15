@@ -190,29 +190,37 @@ export const useSendMessage = () => {
 
       return { previousMessages, tempId };
     },
-    onError: (err, newMessage, context) => {
-      const { channelId } = newMessage;
-      if (context?.previousMessages) {
-        queryClient.setQueryData(
-          [API_ROUTE.MESSAGES.GET(channelId), channelId],
-          produce(context.previousMessages, (draft) => {
-            draft.pages.forEach((page, index) => {
-              if (index === 0) {
-                // FIXME 이 부분 문제 생길수도.
-                page.messages = page.messages.filter((message) => {
-                  return message.isTemp !== true;
-                });
+    onError: (err, variables, context) => {
+      const { channelId, tempId } = variables;
+
+      queryClient.setQueryData<
+        InfiniteData<{
+          messages: MessageWithAuthor[];
+          nextCursor: number | null;
+        }>
+      >([API_ROUTE.MESSAGES.GET(channelId), channelId], (data) => {
+        if (!data) return data;
+        return produce(data, (draft) => {
+          draft.pages.forEach((page, index) => {
+            if (index === 0) {
+              const existingMessageIndex = page.messages.findIndex(
+                (message) => message.id === tempId
+              );
+
+              if (existingMessageIndex !== -1) {
+                page.messages.splice(existingMessageIndex, 1);
               }
-            });
-          })
-        );
-      }
+            }
+          });
+        });
+      });
+
       showToast({
-        message: err.message,
+        message: "메시지 전송에 실패했습니다.",
         type: "error",
       });
     },
-    onSettled: (newMessage, error, variables) => {},
+    onSettled: (newMessage, error, dd) => {},
   });
 };
 
