@@ -32,8 +32,8 @@ const ChannelSideBar = ({
 
   const onClickDeleteServer = (id: number) => {
     showModalWithControls({
-      title: "Delete Server",
-      text: "Are you sure you want to delete this server?",
+      title: "서버 삭제",
+      text: "정말로 서버를 삭제하시겠습니까?\n삭제된 서버는 복구할 수 없습니다.",
       onConfirm: () => {
         deleteServer(id);
         closeModal();
@@ -43,13 +43,23 @@ const ChannelSideBar = ({
 
   const onClickAddChannel = () => {
     showModalWithoutControls({
-      title: "Create Channel",
+      title: "채널 생성",
       children: <CreateChannelForm serverId={server.id} />,
     });
   };
 
   const handleDeleteChannel = (channelId: number) => {
-    deleteChannel(channelId);
+    showModalWithControls({
+      title: "채널 삭제",
+      text: "정말로 채널을 삭제하시겠습니까?\n삭제된 채널은 복구할 수 없습니다.",
+      onConfirm: () => {
+        deleteChannel(channelId);
+        closeModal();
+      },
+      onRequestClose: () => {
+        closeModal();
+      },
+    });
   };
 
   const getCurrentChannelStyle = (channelId: number) => {
