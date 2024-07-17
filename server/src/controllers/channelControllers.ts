@@ -120,6 +120,8 @@ export const getChannelMessages = async (req: Request, res: Response) => {
       },
     });
 
+    await delay(1000);
+
     const nextCursor =
       messages.length === Number(limit)
         ? messages[messages.length - 1].id
@@ -185,6 +187,7 @@ export const createMessage = async (req: Request, res: Response) => {
       channelId: Number(channelId),
       lastMessageId: newMessage.id,
       serverId,
+      authorId,
     });
 
     res.json(newMessage);

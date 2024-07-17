@@ -103,12 +103,22 @@ const Channel = () => {
         onClickChannels={onClickChannels}
         userId={user?.id}
       />
-      <div className="flex-grow h-full bg-background-dark">
-        <div className="flex flex-col h-full">
-          <h1>{currentChannel.name} 채널입니다.</h1>
+      <div className="flex-grow h-full bg-background-dark flex flex-col">
+        <div className="h-12 flex-shrink-0">
+          {currentChannel ? (
+            <h1 className="text-2xl text-white">#{currentChannel.name} 채널</h1>
+          ) : (
+            <h1 className="text-2xl text-white p-4">Channel not found</h1>
+          )}
+        </div>
+        <div className="flex-grow flex flex-col overflow-auto">
           <MessageList
             listEndRef={listEndRef}
             parsedChannelId={parsedChannelId}
+            channelName={
+              currentChannel ? currentChannel.name : "Channel not found"
+            }
+            lastSeenMessageId={currentChannel?.lastSeenMessageId}
           />
           <MessageInput
             scrollToBottom={scrollToBottom}

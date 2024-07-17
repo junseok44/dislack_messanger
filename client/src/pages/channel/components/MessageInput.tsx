@@ -1,6 +1,6 @@
+import { useAuth } from "@/contexts/AuthContext";
 import React, { useState } from "react";
 import { useSendMessage } from "../hooks";
-import { useAuth } from "@/contexts/AuthContext";
 
 const MessageInput = ({
   scrollToBottom,
@@ -44,16 +44,18 @@ const MessageInput = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="h-12">
-      <input
-        type="text"
-        value={messageContent}
-        onChange={(e) => setMessageContent(e.target.value)}
-        placeholder="Enter your message"
-        className="text-black"
-      />
-      <button type="submit">Send Message</button>
-    </form>
+    <div className="h-16 flex flex-shrink-0">
+      <form onSubmit={handleSubmit}>
+        <input
+          type="text"
+          value={messageContent}
+          onChange={(e) => setMessageContent(e.target.value)}
+          placeholder="Enter your message"
+          className="text-black"
+        />
+        <button type="submit">Send Message</button>
+      </form>
+    </div>
   );
 };
 

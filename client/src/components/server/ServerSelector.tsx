@@ -84,7 +84,7 @@ const Sidebar = () => {
   };
 
   return (
-    <div className="w-[72px] bg-primary-dark h-full flex flex-col gap-3 py-3">
+    <div className="w-[72px] bg-primary-dark h-full flex flex-col gap-3 py-3 flex-shrink-0">
       <SidebarButton
         icon="home"
         text="홈"

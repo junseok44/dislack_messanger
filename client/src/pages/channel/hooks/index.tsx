@@ -1,12 +1,11 @@
 import {
-  CreateMessageResponse,
   getAllMessagesResponse,
   getAllUserServersWithChannelsResponse,
   Message,
   MessageWithAuthor,
 } from "@/@types";
+import { QUERY_KEYS } from "@/constants/queryKeys";
 import { API_ROUTE } from "@/constants/routeName";
-import { SOCKET_EVENTS, SOCKET_NAMESPACES } from "@/constants/sockets";
 import { useAuth } from "@/contexts/AuthContext";
 import useToast from "@/hooks/useToast";
 import { ApiError } from "@/lib/api";
@@ -18,84 +17,18 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { produce } from "immer";
-import { useEffect, useRef } from "react";
-import { io, Socket } from "socket.io-client";
 import {
   createChannel,
   deleteChannel,
   fetchMessages,
   sendMessage,
   updateLastSeenMessage,
-} from "./api";
-import { QUERY_KEYS } from "@/constants/queryKeys";
+} from "../api";
+import { useSetNewMessageId } from "./useSetNewMessageId";
+import { useChannelSocket } from "./useChannelSocket";
+import { useAdjustListScrollTop } from "./useAdjustListScrollTop";
 
-export const useChannelSocket = (channelId: string | undefined) => {
-  const queryClient = useQueryClient();
-  const socketRef = useRef<Socket | null>(null);
-
-  const parsedChannelId = channelId ? parseInt(channelId) : undefined;
-
-  useEffect(() => {
-    if (!parsedChannelId) {
-      console.log("No parsedChannelId provided");
-      return;
-    }
-
-    if (!socketRef.current) {
-      socketRef.current = io(
-        process.env.REACT_APP_API_URL + SOCKET_NAMESPACES.CHANNEL || ""
-      );
-    }
-
-    const socket = socketRef.current;
-
-    socket.emit(SOCKET_EVENTS.CHANNEL.JOIN_CHANNEL, channelId);
-
-    const handleNewMessage = (newMessage: CreateMessageResponse) => {
-      const queryKey = [
-        API_ROUTE.MESSAGES.GET(parsedChannelId),
-        parsedChannelId,
-      ];
-
-      const previousMessages =
-        queryClient.getQueryData<
-          InfiniteData<{ messages: Message[]; nextCursor: number | null }>
-        >(queryKey);
-
-      if (previousMessages) {
-        queryClient.setQueryData(
-          queryKey,
-          produce(previousMessages, (draft) => {
-            draft.pages.forEach((page, index) => {
-              if (index === 0) {
-                const existingMessageIndex = page.messages.findIndex(
-                  (message) => message.id == newMessage.tempId
-                );
-
-                if (existingMessageIndex !== -1) {
-                  page.messages[existingMessageIndex] = newMessage;
-                } else {
-                  page.messages.unshift(newMessage);
-                }
-              }
-            });
-          })
-        );
-      }
-    };
-
-    socket.on(SOCKET_EVENTS.CHANNEL.NEW_MESSAGE, handleNewMessage);
-
-    return () => {
-      socket.emit(SOCKET_EVENTS.CHANNEL.LEAVE_CHANNEL, parsedChannelId);
-      socket.off(SOCKET_EVENTS.CHANNEL.NEW_MESSAGE, handleNewMessage);
-      socketRef.current = null;
-      socket.disconnect();
-    };
-  }, [channelId, parsedChannelId, queryClient]);
-};
-
-export const useMessages = (channelId: number | undefined) => {
+const useMessages = (channelId: number | undefined) => {
   return useInfiniteQuery<
     getAllMessagesResponse | undefined,
     Error,
@@ -124,7 +57,7 @@ export const useMessages = (channelId: number | undefined) => {
   });
 };
 
-export const useSendMessage = () => {
+const useSendMessage = () => {
   const queryClient = useQueryClient();
 
   const { user } = useAuth();
@@ -154,9 +87,9 @@ export const useSendMessage = () => {
     mutationFn: sendMessage,
     onMutate: async (newMessage) => {
       const { channelId, tempId, authorId } = newMessage;
-      await queryClient.cancelQueries({
-        queryKey: [API_ROUTE.MESSAGES.GET(channelId), channelId],
-      });
+      // await queryClient.cancelQueries({
+      //   queryKey: [API_ROUTE.MESSAGES.GET(channelId), channelId],
+      // });
 
       const previousMessages = queryClient.getQueryData<
         InfiniteData<{
@@ -224,7 +157,7 @@ export const useSendMessage = () => {
   });
 };
 
-export const useCreateChannel = ({
+const useCreateChannel = ({
   successCallback,
   errorCallback,
 }: {
@@ -250,7 +183,7 @@ export const useCreateChannel = ({
   });
 };
 
-export const useDeleteChannel = () => {
+const useDeleteChannel = () => {
   const queryClient = useQueryClient();
 
   const { showToast } = useToast();
@@ -274,7 +207,7 @@ export const useDeleteChannel = () => {
   });
 };
 
-export const useUpdateLastSeenMessage = () => {
+const useUpdateLastSeenMessage = () => {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
 
@@ -305,4 +238,15 @@ export const useUpdateLastSeenMessage = () => {
       });
     },
   });
+};
+
+export {
+  useChannelSocket,
+  useCreateChannel,
+  useDeleteChannel,
+  useMessages,
+  useSendMessage,
+  useSetNewMessageId,
+  useUpdateLastSeenMessage,
+  useAdjustListScrollTop,
 };

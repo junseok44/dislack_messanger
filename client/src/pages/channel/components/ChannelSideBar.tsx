@@ -59,7 +59,7 @@ const ChannelSideBar = ({
   };
 
   return (
-    <div className="w-60 bg-secondary-dark h-full">
+    <div className="w-60 bg-secondary-dark h-full flex-shrink-0">
       <div className="mb-4">
         <div className="text-2xl ">{server.name}</div>
         <div>{server.inviteCode}</div>
