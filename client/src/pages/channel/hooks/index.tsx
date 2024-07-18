@@ -27,6 +27,8 @@ import {
 import { useSetNewMessageId } from "./useSetNewMessageId";
 import { useChannelSocket } from "./useChannelSocket";
 import { useAdjustListScrollTop } from "./useAdjustListScrollTop";
+import { useChannelMessages } from "./useChannelMessages";
+import useMessageIntersectHandler from "./useMessageIntersectHandler";
 
 const useMessages = (channelId: number | undefined) => {
   return useInfiniteQuery<
@@ -249,4 +251,6 @@ export {
   useSetNewMessageId,
   useUpdateLastSeenMessage,
   useAdjustListScrollTop,
+  useMessageIntersectHandler,
+  useChannelMessages,
 };

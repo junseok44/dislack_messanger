@@ -1,12 +1,9 @@
-import { useListScrollObserver } from "@/hooks/useListScrollObserver";
-import { hasNewMessageOnChannel } from "@/utils/hasNewMessageOnChannel";
-import { withCooldown } from "@/utils/withCooldown";
-import React, { memo, useCallback, useRef } from "react";
+import React, { memo, useRef } from "react";
 import {
   useAdjustListScrollTop,
-  useMessages,
+  useChannelMessages,
+  useMessageIntersectHandler,
   useSetNewMessageId,
-  useUpdateLastSeenMessage,
 } from "../hooks";
 import MessageItem from "./MessageItem";
 
@@ -22,17 +19,11 @@ const MessageList = ({
   channelName: string;
   lastSeenMessageId: number | null;
 }) => {
-  const {
-    data: messageData,
-    hasNextPage,
-    fetchNextPage,
-    isFetching,
-  } = useMessages(parsedChannelId);
+  const { messageData, hasNextPage, fetchNextPage, isFetching, allMessages } =
+    useChannelMessages({
+      parsedChannelId,
+    });
 
-  const allMessages =
-    messageData?.pages.flatMap((page) => page.messages).reverse() || [];
-
-  const { mutate: updateLastSeenMessage } = useUpdateLastSeenMessage();
   const listTopRef = useRef<HTMLDivElement | null>(null);
   const targetRef = useRef<HTMLDivElement | null>(null);
 
@@ -41,39 +32,16 @@ const MessageList = ({
     isFetching,
   });
 
-  const UpdateLastSeenMessageWithCoolDown = useCallback(
-    withCooldown(({ channelId }) => {
-      updateLastSeenMessage({ channelId });
-    }, 1000),
-    [updateLastSeenMessage]
-  );
-
-  useListScrollObserver({
+  useMessageIntersectHandler({
     listTopRef,
     listEndRef,
     targetRef,
-    onScrollTopIntersect: () => {
-      if (hasNextPage && !isFetching) {
-        fetchNextPage();
-      }
-    },
-    onScrollBottomIntersect: () => {
-      if (!parsedChannelId) return;
-
-      if (
-        messageData &&
-        messageData.pages[0].messages.length > 0 &&
-        hasNewMessageOnChannel(
-          messageData?.pages[0].messages[0].id,
-          lastSeenMessageId
-        )
-      ) {
-        // coolDown을 쓰는 이유는, intersect -> 리렌더링 -> intersect -> 리렌더링  이런식으로
-        // 무한히 호출되는 것을 방지하기 위함.
-        // 근데 왜 intersect가 무한히 호출되는거지?
-        UpdateLastSeenMessageWithCoolDown({ channelId: parsedChannelId });
-      }
-    },
+    isFetching,
+    hasNextPage,
+    fetchNextPage,
+    parsedChannelId,
+    lastSeenMessageId,
+    messageData,
   });
 
   const newMessageId = useSetNewMessageId({
