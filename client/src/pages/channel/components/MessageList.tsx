@@ -39,7 +39,6 @@ const MessageList = ({
   useAdjustListScrollTop({
     targetRef,
     isFetching,
-    lastMessages: allMessages,
   });
 
   const UpdateLastSeenMessageWithCoolDown = useCallback(
@@ -118,8 +117,8 @@ const MessageList = ({
         {/* 새로운 데이터가 들어오고 나서 바로 fetch가 일어나는걸 방지하기 위한 완충 공간 */}
         {!isFetching && hasNextPage && (
           <div className="h-12">
-            <div className="h-6 bg-red-300"></div>
-            <div className="h-6 bg-blue-300"></div>
+            {/* <div className="h-6 bg-red-300"></div> */}
+            {/* <div className="h-6 bg-blue-300"></div> */}
           </div>
         )}
         {allMessages?.map((message, index) => {

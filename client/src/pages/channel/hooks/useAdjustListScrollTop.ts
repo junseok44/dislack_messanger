@@ -4,11 +4,9 @@ import { useLocation } from "react-router-dom";
 export const useAdjustListScrollTop = ({
   targetRef,
   isFetching,
-  lastMessages,
 }: {
   targetRef: React.RefObject<HTMLDivElement>;
   isFetching: boolean;
-  lastMessages: any;
 }) => {
   const previousScrollHeight = useRef(0);
   const isFirstAdjusted = useRef(false);
@@ -36,12 +34,10 @@ export const useAdjustListScrollTop = ({
     requestAnimationFrame(() => {
       const offset = currentScrollHeight - previousScrollHeight.current;
 
-      console.log("offset", offset);
-
       targetElement.scrollTop = currentScrollTop + offset;
 
       if (!isFetching) {
-        // 근데 이거 왜 더해줘야 하는거지? ㅋㅋㅋㅋㅋㅋ
+        // 근데 이거 왜 더해줘야 하는거지? 좀 헷갈린다.
         targetElement.scrollTop += adjustingValue;
       }
 
@@ -55,18 +51,17 @@ export const useAdjustListScrollTop = ({
 
   useEffect(() => {
     const targetElement = targetRef.current;
-    if (!targetElement) return;
+    if (!targetElement || isFirstAdjusted.current) return;
 
-    if (!isFetching && !isFirstAdjusted.current) {
-      targetElement.scrollTop = 0;
+    targetElement.scrollTop = 0;
 
+    if (!isFetching) {
       requestAnimationFrame(() => {
-        console.log("1");
-
         targetElement.scrollTop += adjustingValue;
-        isFirstAdjusted.current = true;
       });
     }
+
+    isFirstAdjusted.current = true;
   }, [isFetching]);
 
   // **route가 같은 경우에는 isFirstAdjusted가 업데이트가 안된다.
