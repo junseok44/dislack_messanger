@@ -3,18 +3,22 @@ export const PAGE_ROUTE = {
   REGISTER: "/register",
   LOGIN: "/login",
   CHANNELS_ME: "/channels/@me",
-  CHANNELS_FRIENDS: "/channels/@me/:userId",
   CHANNELS: "/channels/:serverId/:channelId",
   NOT_FOUND: "/not-found",
   ERROR: "/error",
+  CHECKOUT: "/subscription/checkout",
+  PRODUCTS: "/products",
   ALL: "*",
-
   GOTO_CHANNEL: (serverId: number, channelId: number) =>
     `/channels/${serverId}/${channelId}`,
-  GOTO_FRIENDS_PAGE: (userId: number) => `/channels/@me/${userId}`,
 };
 
 export const API_ROUTE = {
+  SUBSCRIPTION: {
+    CHECKOUT_SESSION: "/subscription/checkout-session",
+    CHECKOUT_SESSION_COMPLETE: (sessionId: string | number) =>
+      `/subscription/checkout-session/${sessionId}`,
+  },
   AUTH: {
     REGISTER: "/auth/register",
     LOGIN: "/auth/login",

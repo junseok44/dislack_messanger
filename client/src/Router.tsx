@@ -11,9 +11,10 @@ import PrivateRoute from "./components/PrivateRoute";
 import MainLayout from "./pages/@common/MainLayout";
 import Channel from "./pages/channel";
 import MyPage from "./pages/mypage";
-import Friends from "./pages/friends";
 import MyPageLayout from "./pages/@common/MyPageLayout";
 import InitializeServer from "./components/server/InitializeServer";
+import CheckoutPage from "./pages/checkout";
+import ProductsPage from "./pages/products";
 
 const Router = () => {
   return (
@@ -32,14 +33,13 @@ const Router = () => {
               <Route path={PAGE_ROUTE.CHANNELS} element={<Channel />} />
               <Route element={<MyPageLayout />}>
                 <Route path={PAGE_ROUTE.CHANNELS_ME} element={<MyPage />} />
-                <Route
-                  path={PAGE_ROUTE.CHANNELS_FRIENDS}
-                  element={<Friends />}
-                />
               </Route>
             </Route>
           </Route>
+          <Route path={PAGE_ROUTE.PRODUCTS} element={<ProductsPage />} />
+          <Route path={PAGE_ROUTE.CHECKOUT} element={<CheckoutPage />} />
         </Route>
+
         <Route element={<PublicRoute />}>
           <Route path={PAGE_ROUTE.REGISTER} element={<Register></Register>} />
           <Route path={PAGE_ROUTE.LOGIN} element={<Login></Login>} />
