@@ -15,6 +15,7 @@ declare global {
       JWT_REFRESH_SECRET: string;
       NODE_ENV: "development" | "production";
       SERVER_PORT: number;
+      STRIPE_SECRET_KEY: string;
     }
   }
 }

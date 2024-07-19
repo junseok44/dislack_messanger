@@ -24,6 +24,13 @@ model User {
   messages Message[]
 
   lastSeenMessages LastSeenMessageOnChannel[]
+
+  planId              Int  @default(0)
+  stripeCustomerId    String?  // Stripe에서 고객을 식별하는 데 사용
+  subscriptionId      String?  // Stripe에서 구독을 식별하는 데 사용
+  subscriptionStatus  String   @default("inactive")
+  lastPaymentDate     DateTime?  // 마지막 결제 날짜
+  nextPaymentDate     DateTime?  // 다음 결제 예정 날짜
 }
 
 model Server {
