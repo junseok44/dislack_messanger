@@ -19,4 +19,9 @@ export const ROUTES = {
     REFRESH_TOKEN: "/refresh-token",
     LOGOUT: "/logout",
   },
+  SUBSCRIBE: {
+    CHECKOUT_SESSION: "/checkout-session",
+    CHECKOUT_SESSION_COMPLETE: "/checkout-session/:sessionId",
+    WEBHOOK: "/webhook",
+  },
 };

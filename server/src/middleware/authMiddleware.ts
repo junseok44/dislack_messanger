@@ -23,23 +23,18 @@ export const authenticateToken = async (
       const refreshToken = req.cookies.refreshToken;
 
       if (!refreshToken) {
-        return res
-          .status(401)
-          .json({
-            message: "Unauthorized",
-            errorCode: ERROR_CODES.UNAUTHORIZED,
-          });
+        return res.status(401).json({
+          message: "Unauthorized",
+          errorCode: ERROR_CODES.UNAUTHORIZED,
+        });
       }
 
       jwt.verify(refreshToken, tokenConfig.jwtRefreshSecret!, (err, data) => {
         if (err || !data.id) {
-          // console.log("middleware/auth.ts: 리프레시 토큰이 유효하지 않습니다.");
-          return res
-            .status(401)
-            .json({
-              message: "Unauthorized",
-              errorCode: ERROR_CODES.UNAUTHORIZED,
-            });
+          return res.status(401).json({
+            message: "Unauthorized",
+            errorCode: ERROR_CODES.UNAUTHORIZED,
+          });
         }
 
         // console.log(

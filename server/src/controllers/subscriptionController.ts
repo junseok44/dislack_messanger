@@ -9,7 +9,8 @@ const endpointSecret = "your-webhook-secret";
 
 export const createCheckoutSession = async (req: Request, res: Response) => {
   try {
-    const { priceId, productId, userId } = req.body;
+    const { priceId, productId } = req.body;
+    const userId = req.user.id;
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
@@ -20,18 +21,30 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
         },
       ],
       mode: "subscription",
-      success_url: `${req.headers.origin}/profile`,
-      cancel_url: `${req.headers.origin}/profile`,
+      success_url: `${req.headers.origin}/subscription/checkout?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${req.headers.origin}/`,
       metadata: {
         productId: String(productId),
         userId: String(userId),
       },
     });
 
-    res.json({ sessionId: session.id });
+    res.json({ url: session.url });
   } catch (error) {
     console.error("Error creating checkout session:", error);
     res.status(500).json({ error: "Error creating checkout session" });
+  }
+};
+
+export const getCheckoutSession = async (req: Request, res: Response) => {
+  const { sessionId } = req.params;
+
+  try {
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    res.json(session);
+  } catch (error) {
+    console.error("Error retrieving checkout session:", error);
+    res.status(500).json({ error: "Error retrieving checkout session" });
   }
 };
 

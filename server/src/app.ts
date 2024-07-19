@@ -10,6 +10,7 @@ import authRoutes from "./routes/authRoutes";
 import tokenConfig from "./config/token";
 import channelRoutes from "./routes/channelRoutes";
 import serverRoutes from "./routes/serverRoutes";
+import subscriptionRoutes from "./routes/subscriptionRoutes";
 import { initializeSocket } from "./sockets";
 import http from "http";
 
@@ -32,6 +33,7 @@ initializeSocket(server);
 app.use("/auth", authRoutes);
 app.use("/channels", channelRoutes);
 app.use("/server", serverRoutes);
+app.use("/subscription", subscriptionRoutes);
 
 app.get("/", (req, res) => {
   res.send("Hello World");
