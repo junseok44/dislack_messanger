@@ -9,7 +9,7 @@ import {
   QueryClient,
   QueryClientProvider,
 } from "@tanstack/react-query";
-import ErrorFallback from "./components/ErrorFallback";
+import ErrorFallback from "./components/utils/ErrorFallback";
 import ModalProvider from "./contexts/ModalContext";
 import ToastProvider from "./contexts/ToastContext";
 

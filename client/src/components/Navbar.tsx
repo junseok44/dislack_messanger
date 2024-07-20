@@ -2,7 +2,7 @@ import { PAGE_ROUTE } from "@/constants/routeName";
 import { useAuth } from "@/contexts/AuthContext";
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import Container from "./Container";
+import Container from "./ui/Container";
 // import { SunIcon, MoonIcon, MenuIcon, XIcon } from "@heroicons/react/solid";
 
 const Navbar: React.FC = () => {

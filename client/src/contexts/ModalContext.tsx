@@ -1,4 +1,4 @@
-import CommonModal from "@/components/CommonModal";
+import CommonModal from "@/components/utils/CommonModal";
 import React from "react";
 
 const ModalContext = ({ children }: { children: React.ReactNode }) => {

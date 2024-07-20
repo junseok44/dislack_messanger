@@ -1,13 +1,13 @@
 import { ErrorBoundary } from "react-error-boundary";
 import { Route, Routes } from "react-router-dom";
-import ErrorFallback from "./components/ErrorFallback";
-import PublicRoute from "./components/PublicRoute";
+import ErrorFallback from "./components/utils/ErrorFallback";
+import PublicRoute from "./components/utils/PublicRoute";
 import { PAGE_ROUTE } from "./constants/routeName";
 import NotFound from "./pages/@common/NotFound";
 import Home from "./pages/home";
 import Login from "./pages/login";
 import Register from "./pages/register";
-import PrivateRoute from "./components/PrivateRoute";
+import PrivateRoute from "./components/utils/PrivateRoute";
 import MainLayout from "./pages/@common/MainLayout";
 import Channel from "./pages/channel";
 import MyPage from "./pages/mypage";

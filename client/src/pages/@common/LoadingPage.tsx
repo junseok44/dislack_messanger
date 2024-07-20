@@ -1,4 +1,4 @@
-import FullScreenCenter from "@/components/FullScreenCenter";
+import FullScreenCenter from "@/components/ui/FullScreenCenter";
 import React from "react";
 
 const LoadingPage = ({

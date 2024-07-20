@@ -6,6 +6,7 @@ import useToast from "./useToast";
 interface CheckoutSessionData {
   priceId: string;
   productId: number;
+  planId: number;
 }
 
 export const useCreateCheckoutSession = () => {
