@@ -1,15 +1,16 @@
 import React, { useState } from "react";
 import { useCreateServer } from "@/hooks/server";
 import useModal from "@/hooks/useModal";
+import { ApiError } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
+import { getUserPlan } from "@/constants/stripe";
+import useToast from "@/hooks/useToast";
+import { useNavigate } from "react-router-dom";
+import { PAGE_ROUTE } from "@/constants/routeName";
 
 const CreateServerForm: React.FC = () => {
   const [name, setName] = useState("");
-  const { mutate: createServer } = useCreateServer({
-    successCallback: () => {
-      closeModal();
-    },
-  });
-  const { closeModal } = useModal();
+  const { mutate: createServer } = useCreateServer();
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

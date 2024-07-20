@@ -28,15 +28,15 @@ const queryClient = new QueryClient({
 root.render(
   <QueryClientProvider client={queryClient}>
     <ErrorBoundary FallbackComponent={ErrorFallback} onReset={() => {}}>
-      <ToastProvider>
-        <ModalProvider>
-          <BrowserRouter>
-            <AuthProvider>
+      <BrowserRouter>
+        <AuthProvider>
+          <ToastProvider>
+            <ModalProvider>
               <App />
-            </AuthProvider>
-          </BrowserRouter>
-        </ModalProvider>
-      </ToastProvider>
+            </ModalProvider>
+          </ToastProvider>
+        </AuthProvider>
+      </BrowserRouter>
     </ErrorBoundary>
   </QueryClientProvider>
 );

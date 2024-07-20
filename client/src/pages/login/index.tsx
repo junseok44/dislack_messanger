@@ -39,7 +39,7 @@ const LoginPage: React.FC = () => {
 
     onSuccess: (response: {
       data: {
-        user: { username: string; id: number };
+        user: { username: string; id: number; planId: number };
       };
     }) => {
       showToast({

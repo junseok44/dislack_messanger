@@ -2,7 +2,7 @@
 import CheckoutButton from "@/components/CheckoutButton";
 
 const MyPage = () => {
-  return <CheckoutButton></CheckoutButton>;
+  return null;
 };
 
 export default MyPage;

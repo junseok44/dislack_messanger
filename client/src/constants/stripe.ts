@@ -1,13 +1,13 @@
 export const PRODUCTS = [
   {
-    id: 1,
+    id: 0,
     name: "Basic",
     servers: 1,
     prices: [],
     productId: "product_basic",
   },
   {
-    id: 2,
+    id: 1,
     name: "Intermediate",
     servers: 3,
     prices: [
@@ -21,7 +21,7 @@ export const PRODUCTS = [
     productId: "prod_QUmQ81fCE5AECn",
   },
   {
-    id: 3,
+    id: 2,
     name: "Expert",
     servers: 5,
     prices: [
@@ -35,3 +35,7 @@ export const PRODUCTS = [
     productId: "prod_QUmQGIDEH0tcJD",
   },
 ];
+
+export const getUserPlan = (planId: number) => {
+  return PRODUCTS.find((product) => product.id === planId);
+};

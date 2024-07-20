@@ -38,3 +38,4 @@ services:
       - ./client/src:/app/src
     environment:
       - REACT_APP_API_URL=http://localhost:8001
+      - REACT_APP_PUBLISHABLE_STRIPE_KEY=pk_test_51PdmCGRv8HKFmcvf8XjWAZ1LMzF7dKL01Gq6I39FGTT5tb73kgKIiOxC1vqfYMKT74XxgverDOsLYYhwcApkioEP00PNeSRKCA

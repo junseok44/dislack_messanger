@@ -3,12 +3,27 @@ import prisma from "../config/db";
 import { ERROR_CODES } from "../constants/errorCode";
 import { SOCKET_EVENTS, SOCKET_NAMESPACES } from "../constants/socket";
 import { getNamespace } from "../sockets";
+import { formatErrorResponse } from "../utils/formatResponse";
+import { getUserWithPlan } from "../lib/getUserPlan";
 
 export const createServer = async (req: Request, res: Response) => {
   const { name } = req.body;
   const userId = req.user.id;
 
   try {
+    const { user, product } = await getUserWithPlan(userId);
+
+    if (user.ownedServers.length >= product.servers) {
+      return res
+        .status(400)
+        .json(
+          formatErrorResponse(
+            ERROR_CODES.EXCEEDED_SERVER_CREATE_LIMIT,
+            "Server limit exceeded"
+          )
+        );
+    }
+
     const server = await prisma.server.create({
       data: {
         name,

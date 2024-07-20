@@ -104,6 +104,7 @@ export const login = async (req: Request, res: Response) => {
         user: {
           username: user.username,
           id: user.id,
+          planId: user.planId,
         },
       })
     );
@@ -194,6 +195,7 @@ export const checkAuth = async (req: Request, res: Response) => {
       select: {
         username: true,
         id: true,
+        planId: true,
       },
     });
 

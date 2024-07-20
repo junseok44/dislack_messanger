@@ -4,22 +4,29 @@ import {
 } from "@/@types";
 import { createServer, deleteServer, joinServer } from "@/api/server";
 import { QUERY_KEYS } from "@/constants/queryKeys";
-import { API_ROUTE } from "@/constants/routeName";
+import { API_ROUTE, PAGE_ROUTE } from "@/constants/routeName";
 import { api, ApiError } from "@/lib/api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import useToast from "./useToast";
+import useModal from "./useModal";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { getUserPlan } from "@/constants/stripe";
 
-export const useCreateServer = ({
-  successCallback,
-}: {
-  successCallback?: () => void;
-} = {}) => {
+export const useCreateServer = () => {
   const queryClient = useQueryClient();
 
+  const { closeModal, showModalWithControls } = useModal();
   const { showToast } = useToast();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const plan = getUserPlan(user?.planId || 0);
 
   return useMutation<ServerResponse, ApiError, string>({
     mutationFn: (name: string) => createServer(name),
+    onMutate: async () => {
+      closeModal();
+    },
     onSuccess: async (newServer) => {
       queryClient.setQueryData<getAllUserServersWithChannelsResponse>(
         QUERY_KEYS.USER_SERVERS_WITH_CHANNELS,
@@ -28,14 +35,30 @@ export const useCreateServer = ({
           return [...oldData, newServer];
         }
       );
-      successCallback && successCallback();
     },
     onError: (error) => {
-      console.error("Failed to create server:", error);
-      showToast({
-        message: error.message,
-        type: "error",
-      });
+      console.log("onError");
+
+      if (error instanceof ApiError && error.errorCode === 1017) {
+        showModalWithControls({
+          title: "서버 생성 제한 초과",
+          text: `현재 ${plan?.servers}개의 서버를 생성할 수 있습니다.\n요금제를 업그레이드하시겠습니까?`,
+          onConfirm: () => {
+            navigate(PAGE_ROUTE.PRODUCTS);
+          },
+          onRequestClose: () => {
+            closeModal();
+          },
+        });
+      } else {
+        showToast({
+          message: error.message,
+          type: "error",
+        });
+      }
+    },
+    onSettled: () => {
+      console.log("onSettled");
     },
   });
 };

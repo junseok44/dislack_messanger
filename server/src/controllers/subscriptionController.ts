@@ -9,8 +9,23 @@ const endpointSecret = "your-webhook-secret";
 
 export const createCheckoutSession = async (req: Request, res: Response) => {
   try {
-    const { priceId, productId } = req.body;
+    const { priceId, productId, planId } = req.body;
     const userId = req.user.id;
+
+    const user = await db.user.findUnique({
+      where: { id: userId },
+      select: { planId: true, nextPaymentDate: true, subscriptionStatus: true },
+    });
+
+    if (
+      user.planId === planId &&
+      user.nextPaymentDate > new Date() &&
+      user.subscriptionStatus === "active"
+    ) {
+      return res
+        .status(400)
+        .json({ error: "User is already subscribed to this plan" });
+    }
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
@@ -22,7 +37,7 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
       ],
       mode: "subscription",
       success_url: `${req.headers.origin}/subscription/checkout?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${req.headers.origin}/`,
+      cancel_url: `${req.headers.origin}/products`,
       metadata: {
         productId: String(productId),
         userId: String(userId),

@@ -1,5 +1,6 @@
 // src/contexts/AuthContext.tsx
 import { API_ROUTE } from "@/constants/routeName";
+import useCheckUser from "@/hooks/useCheckUser";
 import { api, ApiError } from "@/lib/api";
 import { useMutation } from "@tanstack/react-query";
 import {
@@ -22,6 +23,7 @@ interface AuthContextType {
 interface User {
   username: string;
   id: number;
+  planId: number;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -51,43 +53,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     },
   });
 
-  const { mutate: checkUser } = useMutation({
-    mutationFn: async () => {
-      await new Promise((resolve) => setTimeout(resolve, 200));
-
-      return api.get(API_ROUTE.AUTH.CHECK, {});
-    },
-    onMutate: () => {
-      setAuthError(false);
-    },
-    onError: (err) => {
-      if (err instanceof ApiError) {
-        if (err.statusCode === 403 || err.statusCode === 401) {
-          logout();
-          return;
-        }
-
-        setAuthError(true);
-      }
-    },
-    onSettled: () => {
-      setAuthLoading(false);
-    },
-    onSuccess: (response: {
-      data: {
-        user: {
-          username: string;
-          id: number;
-        };
-      };
-    }) => {
-      login(response.data.user);
-      setAuthError(false);
-    },
-  });
+  const { mutate: checkUser } = useCheckUser();
 
   useEffect(() => {
-    checkUser();
+    setAuthError(false);
+    setAuthLoading(true);
+
+    checkUser(undefined, {
+      onError: (err) => {
+        if (err instanceof ApiError) {
+          if (err.statusCode === 403 || err.statusCode === 401) {
+            logout();
+            return;
+          }
+
+          setAuthError(true);
+        }
+      },
+      onSettled: () => {
+        setAuthLoading(false);
+      },
+      onSuccess: (response) => {
+        login(response.data.user);
+        setAuthError(false);
+      },
+    });
   }, []);
 
   return (

@@ -118,6 +118,13 @@ const Sidebar = () => {
       ></SidebarButton>
       <SidebarButton
         icon="home"
+        text="상품"
+        onClick={() => {
+          navigate(PAGE_ROUTE.PRODUCTS);
+        }}
+      ></SidebarButton>
+      <SidebarButton
+        icon="home"
         text="로그아웃"
         onClick={() => logout()}
       ></SidebarButton>

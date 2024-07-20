@@ -5,7 +5,7 @@ import useToast from "./useToast";
 
 interface CheckoutSessionData {
   priceId: string;
-  productId: number;
+  productId: string;
   planId: number;
 }
 

@@ -19,5 +19,6 @@ export const useFetchCheckoutSession = (sessionId: string) => {
       );
     },
     enabled: !!sessionId,
+    retry: 1,
   });
 };
