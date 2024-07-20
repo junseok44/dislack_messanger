@@ -32,9 +32,10 @@ const Channel = () => {
 
   const { showToast } = useToast();
 
+  // 현재 채널이 존재하는지 확인.
   useEffect(() => {
     if (!parsedServerId || !parsedChannelId) {
-      navigate(PAGE_ROUTE.CHANNELS_ME);
+      navigate(PAGE_ROUTE.HOME);
       return;
     }
 
@@ -46,7 +47,7 @@ const Channel = () => {
           message: "해당 서버를 찾을 수 없습니다.",
           type: "error",
         });
-        navigate(PAGE_ROUTE.CHANNELS_ME);
+        navigate(PAGE_ROUTE.HOME);
         return;
       }
 
@@ -64,7 +65,7 @@ const Channel = () => {
           return;
         }
         // 만약 어떤 오류로 인해 해당 서버에 채널이 하나도 없다면, 서버로 리다이렉트.
-        navigate(PAGE_ROUTE.CHANNELS_ME);
+        navigate(PAGE_ROUTE.HOME);
       }
     }
   }, [allServers, parsedServerId, parsedChannelId, navigate]);

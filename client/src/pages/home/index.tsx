@@ -9,11 +9,11 @@ const Home = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    navigate(PAGE_ROUTE.CHANNELS_ME);
+    // navigate(PAGE_ROUTE.CHANNELS_ME);
   }, []);
 
   const onClick = () => {
-    navigate(PAGE_ROUTE.CHANNELS_ME);
+    // navigate(PAGE_ROUTE.CHANNELS_ME);
   };
 
   return (

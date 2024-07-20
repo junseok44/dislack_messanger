@@ -15,6 +15,7 @@ import MyPageLayout from "./pages/@common/MyPageLayout";
 import InitializeServer from "./components/server/InitializeServer";
 import CheckoutPage from "./pages/checkout";
 import ProductsPage from "./pages/products";
+import OnboardingPage from "./pages/onboarding";
 
 const Router = () => {
   return (
@@ -32,12 +33,13 @@ const Router = () => {
             <Route element={<MainLayout />}>
               <Route path={PAGE_ROUTE.CHANNELS} element={<Channel />} />
               <Route element={<MyPageLayout />}>
-                <Route path={PAGE_ROUTE.CHANNELS_ME} element={<MyPage />} />
+                {/* <Route path={PAGE_ROUTE.CHANNELS_ME} element={<MyPage />} /> */}
               </Route>
             </Route>
           </Route>
           <Route path={PAGE_ROUTE.PRODUCTS} element={<ProductsPage />} />
           <Route path={PAGE_ROUTE.CHECKOUT} element={<CheckoutPage />} />
+          <Route path={PAGE_ROUTE.ONBOARDING} element={<OnboardingPage />} />
         </Route>
 
         <Route element={<PublicRoute />}>

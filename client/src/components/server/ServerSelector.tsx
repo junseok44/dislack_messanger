@@ -47,10 +47,6 @@ const SidebarButton = ({
 const Sidebar = () => {
   const navigate = useNavigate();
 
-  const onClickMyPage = () => {
-    navigate(PAGE_ROUTE.CHANNELS_ME);
-  };
-
   const onClickChannels = (server: number, channel: number) => {
     navigate(PAGE_ROUTE.GOTO_CHANNEL(server, channel));
   };
@@ -85,11 +81,11 @@ const Sidebar = () => {
 
   return (
     <div className="w-[72px] bg-primary-dark h-full flex flex-col gap-3 py-3 flex-shrink-0">
-      <SidebarButton
+      {/* <SidebarButton
         icon="home"
         text="홈"
         onClick={onClickMyPage}
-      ></SidebarButton>
+      ></SidebarButton> */}
 
       {data?.map((server) => {
         const hasNewMessage = hasServerNewMessage(server);
