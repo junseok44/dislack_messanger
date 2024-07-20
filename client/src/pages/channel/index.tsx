@@ -7,7 +7,7 @@ import ChannelSideBar from "./components/ChannelSideBar";
 import MessageInput from "./components/MessageInput";
 import MessageList from "./components/MessageList";
 import { useChannelSocket } from "./hooks";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import useToast from "@/hooks/useToast";
 
 const Channel = () => {
@@ -69,30 +69,26 @@ const Channel = () => {
     }
   }, [allServers, parsedServerId, parsedChannelId, navigate]);
 
-  if (!serverId || !parsedChannelId) {
-    return <div>redirecting...</div>;
-  }
-
   const currentServer = allServers?.find(
-    (server) => server.id === parseInt(serverId)
+    (server) => server.id === parseInt(serverId || "")
   );
 
-  if (!currentServer) {
-    return <div>redirecting...</div>;
-  }
+  const channels = currentServer?.channels;
 
-  const channels = currentServer.channels;
-
-  const onClickChannels = (channelId: number) => {
-    navigate(PAGE_ROUTE.GOTO_CHANNEL(currentServer.id, channelId));
-  };
-
-  const currentChannel = channels.find(
+  const currentChannel = channels?.find(
     (channel) => channel.id === parsedChannelId
   );
 
-  if (!currentChannel) {
-    return <div>channel not found...</div>;
+  const onClickChannels = useCallback(
+    (channelId: number) => {
+      if (!currentServer) return;
+      navigate(PAGE_ROUTE.GOTO_CHANNEL(currentServer.id, channelId));
+    },
+    [navigate, currentServer]
+  );
+
+  if (!allServers || !currentServer || !currentChannel || !channels) {
+    return <div>redirecting...</div>;
   }
 
   return (
