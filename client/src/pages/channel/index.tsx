@@ -9,6 +9,7 @@ import MessageList from "./components/MessageList";
 import { useChannelSocket } from "./hooks";
 import { useCallback, useEffect } from "react";
 import useToast from "@/hooks/useToast";
+import LoadingPage from "../@common/LoadingPage";
 
 const Channel = () => {
   const { data: allServers } = useUserServersWithChannels();
@@ -33,6 +34,8 @@ const Channel = () => {
   const { showToast } = useToast();
 
   // 현재 채널이 존재하는지 확인.
+  // 이 작업도 지금 매번 렌더링될때마다 하고 있다.
+  // 차이는 지금 채널에서의 변경만 반영하느냐 아니면 전체 서버에서의 변경을 반영하느냐의 차이.
   useEffect(() => {
     if (!parsedServerId || !parsedChannelId) {
       navigate(PAGE_ROUTE.HOME);
@@ -89,7 +92,7 @@ const Channel = () => {
   );
 
   if (!allServers || !currentServer || !currentChannel || !channels) {
-    return <div>redirecting...</div>;
+    return <LoadingPage loadingText="Loading Server" />;
   }
 
   return (

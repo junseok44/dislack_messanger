@@ -1,26 +1,34 @@
-import { PAGE_ROUTE } from "@/constants/routeName";
-import { useAuth } from "@/contexts/AuthContext";
-import { useEffect } from "react";
+import { useUserServersWithChannels } from "@/hooks/server";
+import LoadingPage from "../@common/LoadingPage";
+import ErrorPage from "../@common/ErrorPage";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { PAGE_ROUTE } from "@/constants/routeName";
 
 const Home = () => {
-  const { user, logout } = useAuth();
+  const { data: allServers, isLoading, isError } = useUserServersWithChannels();
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    // navigate(PAGE_ROUTE.CHANNELS_ME);
-  }, []);
+    if (!isLoading && allServers) {
+      if (allServers.length === 0) {
+        navigate(PAGE_ROUTE.ONBOARDING);
+      } else {
+        navigate(
+          PAGE_ROUTE.GOTO_CHANNEL(
+            allServers[0].id,
+            allServers[0].channels[0].id
+          )
+        );
+      }
+    }
+  }, [allServers]);
 
-  const onClick = () => {
-    // navigate(PAGE_ROUTE.CHANNELS_ME);
-  };
-
-  return (
-    <div className="w-screen h-screen bg-background-dark flex justify-center items-center flex-col">
-      <h1 className="text-2xl">welcome {user ? user.username : null}</h1>
-      <button onClick={onClick}>go to mypage</button>
-    </div>
+  return isError ? (
+    <ErrorPage />
+  ) : (
+    <LoadingPage loadingText="서버 정보를 불러오고 있어요..." />
   );
 };
 

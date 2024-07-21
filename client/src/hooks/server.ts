@@ -35,6 +35,13 @@ export const useCreateServer = () => {
           return [...oldData, newServer];
         }
       );
+
+      showToast({
+        message: "성공적으로 서버를 생성했어요!",
+        type: "success",
+      });
+
+      navigate(PAGE_ROUTE.GOTO_CHANNEL(newServer.id, newServer.channels[0].id));
     },
     onError: (error) => {
       console.log("onError");
@@ -97,6 +104,8 @@ export const useJoinServer = ({}: {}) => {
 
   const { showToast } = useToast();
 
+  const navigate = useNavigate();
+
   return useMutation<ServerResponse, ApiError, string>({
     mutationFn: (inviteCode: string) => joinServer({ inviteCode }),
     onSuccess: (newServer) => {
@@ -107,6 +116,13 @@ export const useJoinServer = ({}: {}) => {
           return [...oldData, newServer];
         }
       );
+
+      showToast({
+        message: "성공적으로 서버에 참가했어요!",
+        type: "success",
+      });
+
+      navigate(PAGE_ROUTE.GOTO_CHANNEL(newServer.id, newServer.channels[0].id));
     },
     onError: (error) => {
       console.error("Failed to join server:", error);

@@ -1,21 +1,19 @@
 import { ErrorBoundary } from "react-error-boundary";
 import { Route, Routes } from "react-router-dom";
+import InitializeServer from "./components/server/InitializeServer";
 import ErrorFallback from "./components/utils/ErrorFallback";
+import PrivateRoute from "./components/utils/PrivateRoute";
 import PublicRoute from "./components/utils/PublicRoute";
 import { PAGE_ROUTE } from "./constants/routeName";
+import MainLayout from "./pages/@common/MainLayout";
 import NotFound from "./pages/@common/NotFound";
+import Channel from "./pages/channel";
+import CheckoutPage from "./pages/checkout";
 import Home from "./pages/home";
 import Login from "./pages/login";
-import Register from "./pages/register";
-import PrivateRoute from "./components/utils/PrivateRoute";
-import MainLayout from "./pages/@common/MainLayout";
-import Channel from "./pages/channel";
-import MyPage from "./pages/mypage";
-import MyPageLayout from "./pages/@common/MyPageLayout";
-import InitializeServer from "./components/server/InitializeServer";
-import CheckoutPage from "./pages/checkout";
-import ProductsPage from "./pages/products";
 import OnboardingPage from "./pages/onboarding";
+import ProductsPage from "./pages/products";
+import Register from "./pages/register";
 
 const Router = () => {
   return (
@@ -27,21 +25,17 @@ const Router = () => {
       }}
     >
       <Routes>
-        <Route path={PAGE_ROUTE.HOME} element={<Home />} />
         <Route element={<PrivateRoute />}>
           <Route element={<InitializeServer />}>
             <Route element={<MainLayout />}>
               <Route path={PAGE_ROUTE.CHANNELS} element={<Channel />} />
-              <Route element={<MyPageLayout />}>
-                {/* <Route path={PAGE_ROUTE.CHANNELS_ME} element={<MyPage />} /> */}
-              </Route>
             </Route>
           </Route>
+          <Route path={PAGE_ROUTE.HOME} element={<Home />} />
           <Route path={PAGE_ROUTE.PRODUCTS} element={<ProductsPage />} />
           <Route path={PAGE_ROUTE.CHECKOUT} element={<CheckoutPage />} />
           <Route path={PAGE_ROUTE.ONBOARDING} element={<OnboardingPage />} />
         </Route>
-
         <Route element={<PublicRoute />}>
           <Route path={PAGE_ROUTE.REGISTER} element={<Register></Register>} />
           <Route path={PAGE_ROUTE.LOGIN} element={<Login></Login>} />
