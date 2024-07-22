@@ -2,14 +2,14 @@ import { PAGE_ROUTE } from "@/constants/routeName";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserServersWithChannels } from "@/hooks/server";
 import useAutoScroll from "@/hooks/useAutoScroll";
+import useToast from "@/hooks/useToast";
+import { useCallback, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import LoadingPage from "../@common/LoadingPage";
 import ChannelSideBar from "./components/ChannelSideBar";
 import MessageInput from "./components/MessageInput";
-import MessageList from "./components/MessageList";
 import { useChannelSocket } from "./hooks";
-import { useCallback, useEffect } from "react";
-import useToast from "@/hooks/useToast";
-import LoadingPage from "../@common/LoadingPage";
+import MediaChat from "./components/MediaChat";
 
 const Channel = () => {
   const { data: allServers } = useUserServersWithChannels();
@@ -112,19 +112,22 @@ const Channel = () => {
           )}
         </div>
         <div className="flex-grow flex flex-col overflow-auto">
-          <MessageList
+          <div>
+            <MediaChat />
+            {/* <MessageList
             listEndRef={listEndRef}
             parsedChannelId={parsedChannelId}
             channelName={
               currentChannel ? currentChannel.name : "Channel not found"
             }
             lastSeenMessageId={currentChannel?.lastSeenMessageId}
-          />
-          <MessageInput
-            scrollToBottom={scrollToBottom}
-            parsedChannelId={parsedChannelId}
-            parsedServerId={currentServer.id}
-          />
+          /> */}
+            <MessageInput
+              scrollToBottom={scrollToBottom}
+              parsedChannelId={parsedChannelId}
+              parsedServerId={currentServer.id}
+            />
+          </div>
         </div>
       </div>
     </div>

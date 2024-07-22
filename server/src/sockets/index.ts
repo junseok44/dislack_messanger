@@ -3,6 +3,7 @@ import { Server as HttpServer } from "http";
 import { initializeChannelNamespace } from "./channelNameSpace";
 import { SOCKET_EVENTS, SOCKET_NAMESPACES } from "../constants/socket";
 import { initializeServerNamespace } from "./serverNameSpace";
+import { initializeMediaChatNamespace } from "./mediaChatNameSpace";
 
 let io: Server | null = null;
 
@@ -15,6 +16,7 @@ export const initializeSocket = (server: HttpServer) => {
 
   initializeChannelNamespace(io);
   initializeServerNamespace(io);
+  initializeMediaChatNamespace(io);
 };
 
 export const getIO = (): Server => {

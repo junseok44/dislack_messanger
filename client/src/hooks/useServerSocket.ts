@@ -10,7 +10,7 @@ import { useUserServersWithChannels } from "./server";
 import { useAuth } from "@/contexts/AuthContext";
 
 // TODO: 나중에 테스트할 부분. 만약 해당 서버, 해당 채널에 있었는데 삭제되었다? 그러면 navigate 되어야 함.
-
+// 이 부분 socket 연결 자체도 바꿔야 함. 해당 컴포넌트 마운트될때로 바꿀 것.
 const socket = io(
   process.env.REACT_APP_API_URL + SOCKET_NAMESPACES.SERVER || ""
 );

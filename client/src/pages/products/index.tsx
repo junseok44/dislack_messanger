@@ -1,10 +1,10 @@
-import CheckoutButton from "@/components/CheckoutButton";
 import FullScreenCenter from "@/components/ui/FullScreenCenter";
 import { PRODUCTS } from "@/constants/stripe";
 import useCheckUser from "@/hooks/useCheckUser";
 import LoadingPage from "../@common/LoadingPage";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import CheckoutButton from "../checkout/CheckoutButton";
 
 const ProductsPage = () => {
   const { data: response, error, mutate } = useCheckUser();

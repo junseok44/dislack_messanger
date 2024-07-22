@@ -5,10 +5,10 @@ export const initializeServerNamespace = (io: Server) => {
   const serverNamespace = io.of(SOCKET_NAMESPACES.SERVER);
 
   serverNamespace.on(SOCKET_EVENTS.SERVER.CONNECTION, (socket) => {
-    console.log("A user connected to server namespace", socket.id);
+    // console.log("A user connected to server namespace", socket.id);
 
     socket.on(SOCKET_EVENTS.SERVER.SUBSCRIBE_SERVER, (serverIds: number[]) => {
-      console.log("User subscribed to servers: ", serverIds);
+      // console.log("User subscribed to servers: ", serverIds);
       serverIds.forEach((serverId) => {
         socket.join(`server_${serverId}`);
       });
@@ -17,7 +17,7 @@ export const initializeServerNamespace = (io: Server) => {
     socket.on(
       SOCKET_EVENTS.SERVER.UNSUBSCRIBE_SERVER,
       (serverIds: number[]) => {
-        console.log("User unsubscribed from servers: ", serverIds);
+        // console.log("User unsubscribed from servers: ", serverIds);
         serverIds.forEach((serverId) => {
           socket.leave(`server_${serverId}`);
         });
@@ -87,7 +87,7 @@ export const initializeServerNamespace = (io: Server) => {
     );
 
     socket.on(SOCKET_EVENTS.SERVER.DISCONNECT, () => {
-      console.log("User disconnected from server namespace", socket.id);
+      // console.log("User disconnected from server namespace", socket.id);
     });
   });
 };
