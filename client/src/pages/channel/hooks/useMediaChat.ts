@@ -1,12 +1,11 @@
 // src/components/MediaChat.tsx
 import { SOCKET_EVENTS, SOCKET_NAMESPACES } from "@/constants/sockets";
+import useMediaChatStore from "@/store/mediaStore";
 import React, { useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 
 interface UseMediaChatProps {
   roomId: number;
-  initialVideoEnabled: boolean;
-  initialAudioEnabled: boolean;
 }
 
 export interface RemoteStream {
@@ -14,22 +13,43 @@ export interface RemoteStream {
   stream: MediaStream;
 }
 
-const useMediaChat = ({
-  roomId,
-  initialAudioEnabled,
-  initialVideoEnabled,
-}: UseMediaChatProps) => {
+const useMediaChat = ({ roomId }: UseMediaChatProps) => {
   const socket = useRef<Socket | null>(null);
   const peerConnections = useRef<{ [id: string]: RTCPeerConnection }>({});
-  const localStream = useRef<MediaStream | null>(null);
-  const localVideoRef = useRef<HTMLVideoElement | null>(null);
   const isLocalStreamReady = useRef<boolean>(false);
-  const [remoteStreams, setRemoteStreams] = useState<RemoteStream[]>([]);
-  const [videoEnabled, setVideoEnabled] = useState(initialVideoEnabled);
-  const [audioEnabled, setAudioEnabled] = useState(initialAudioEnabled);
+
+  const {
+    audioEnabled,
+    videoEnabled,
+    localStream,
+    setLocalStream,
+    addNewRemoteStream,
+    removeRemoteStream,
+    resetRemoteStreams,
+    remoteStreams,
+  } = useMediaChatStore();
 
   useEffect(() => {
     if (!roomId) return;
+
+    const startMedia = async () => {
+      try {
+        const response = await navigator.mediaDevices.getUserMedia({
+          audio: audioEnabled,
+          video: videoEnabled,
+        });
+        setLocalStream(response);
+        isLocalStreamReady.current = true;
+      } catch (error) {
+        console.error("Error accessing media devices.", error);
+      }
+    };
+
+    startMedia();
+  }, [roomId]);
+
+  useEffect(() => {
+    if (!roomId || !localStream) return;
 
     if (!socket.current) {
       socket.current = io(
@@ -51,9 +71,7 @@ const useMediaChat = ({
           delete peerConnections.current[peerId];
         }
 
-        setRemoteStreams((prevStreams) =>
-          prevStreams.filter((stream) => stream.id !== peerId)
-        );
+        removeRemoteStream(peerId);
       });
 
       socket.current.on(
@@ -77,24 +95,9 @@ const useMediaChat = ({
         }
       );
     }
+  }, [roomId, localStream]);
 
-    const startMedia = async () => {
-      try {
-        localStream.current = await navigator.mediaDevices.getUserMedia({
-          audio: true,
-          video: true,
-        });
-        if (localVideoRef.current) {
-          localVideoRef.current.srcObject = localStream.current;
-        }
-        isLocalStreamReady.current = true; // 로컬 스트림 준비 완료
-      } catch (error) {
-        console.error("Error accessing media devices.", error);
-      }
-    };
-
-    startMedia();
-
+  useEffect(() => {
     const handleBeforeUnload = () => {
       console.log("Unmounting media chat component", roomId, socket.current);
 
@@ -112,12 +115,12 @@ const useMediaChat = ({
       });
 
       // Stop all local media tracks
-      if (localStream.current) {
-        localStream.current.getTracks().forEach((track) => track.stop());
+      if (localStream) {
+        localStream.getTracks().forEach((track) => track.stop());
       }
 
       // Clean up remote video elements
-      setRemoteStreams([]);
+      resetRemoteStreams();
     };
 
     window.addEventListener("beforeunload", handleBeforeUnload);
@@ -126,19 +129,19 @@ const useMediaChat = ({
       handleBeforeUnload();
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, [roomId]);
+  }, []);
 
   useEffect(() => {
-    if (localStream.current) {
-      localStream.current.getTracks().forEach((track) => {
+    if (localStream) {
+      localStream.getTracks().forEach((track) => {
         track.enabled = track.kind === "video" ? videoEnabled : audioEnabled;
       });
 
       Object.values(peerConnections.current).forEach((peerConnection) => {
-        if (!localStream.current) return;
+        if (!localStream) return;
 
-        localStream.current?.getTracks().forEach((track) => {
-          if (!localStream.current) return;
+        localStream?.getTracks().forEach((track) => {
+          if (!localStream) return;
 
           const sender = peerConnection
             .getSenders()
@@ -146,12 +149,12 @@ const useMediaChat = ({
           if (sender) {
             sender.replaceTrack(track);
           } else {
-            peerConnection.addTrack(track, localStream.current);
+            peerConnection.addTrack(track, localStream);
           }
         });
       });
     }
-  }, [videoEnabled, audioEnabled]);
+  }, [videoEnabled, audioEnabled, localStream]);
 
   const createPeerConnection = (peerId: string) => {
     const peerConnection = new RTCPeerConnection({
@@ -173,12 +176,9 @@ const useMediaChat = ({
     };
 
     peerConnection.ontrack = (event) => {
-      setRemoteStreams((prevStreams) => {
-        const streamExists = prevStreams.some((stream) => stream.id === peerId);
-        if (!streamExists) {
-          return [...prevStreams, { id: peerId, stream: event.streams[0] }];
-        }
-        return prevStreams;
+      addNewRemoteStream({
+        id: peerId,
+        stream: event.streams[0],
       });
     };
 
@@ -254,34 +254,21 @@ const useMediaChat = ({
   };
 
   const addTracksToPeerConnection = (peerConnection: RTCPeerConnection) => {
-    if (localStream.current) {
+    if (localStream) {
       const existingTracks = new Set(
         peerConnection.getSenders().map((sender) => sender.track)
       );
-      localStream.current.getTracks().forEach((track) => {
+      localStream.getTracks().forEach((track) => {
         if (!existingTracks.has(track)) {
-          // console.log(`Adding track ${track.kind} to peer connection`);
-          peerConnection.addTrack(track, localStream.current!);
-        } else {
-          // console.log(`Track ${track.kind} already added to peer connection`);
+          console.log(`Adding track ${track.kind} to peer connection`);
+          peerConnection.addTrack(track, localStream!);
         }
       });
     }
   };
 
-  const toggleVideo = () => {
-    setVideoEnabled((prev) => !prev);
-  };
-
-  const toggleAudio = () => {
-    setAudioEnabled((prev) => !prev);
-  };
-
   return {
-    localVideoRef,
     remoteStreams,
-    toggleVideo,
-    toggleAudio,
     audioEnabled,
     videoEnabled,
   };

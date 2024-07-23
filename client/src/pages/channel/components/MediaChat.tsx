@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import useMediaChat, { RemoteStream } from "../hooks/useMediaChat";
+import useMediaChatStore from "@/store/mediaStore";
 
 const LocalVideo = React.memo(
   ({ localVideoRef }: { localVideoRef: React.RefObject<HTMLVideoElement> }) => {
@@ -35,32 +36,55 @@ export const RemoteVideos = React.memo(
   }
 );
 
+const TestVideoSet = ({ localStream }: { localStream: MediaStream | null }) => {
+  const localVideoRef = useRef<HTMLVideoElement | null>(null);
+
+  useEffect(() => {
+    if (localStream && localVideoRef.current) {
+      localVideoRef.current.srcObject = localStream;
+    }
+  }, [localStream]);
+
+  return (
+    <video ref={localVideoRef} autoPlay muted style={{ width: "300px" }} />
+  );
+};
+
 const MediaChat = () => {
+  useMediaChat({
+    roomId: 1,
+  });
+
   const {
-    localVideoRef,
-    remoteStreams,
-    toggleAudio,
     toggleVideo,
+    toggleAudio,
+    localStream,
+    remoteStreams,
+    globalMode,
+    toggleMode,
     audioEnabled,
     videoEnabled,
-  } = useMediaChat({
-    roomId: 1,
-    initialVideoEnabled: true,
-    initialAudioEnabled: true,
-  });
+  } = useMediaChatStore();
 
   return (
     <div>
-      <LocalVideo localVideoRef={localVideoRef} />
-      <RemoteVideos remoteStreams={remoteStreams} />
       <div>
+        <RemoteVideos remoteStreams={remoteStreams} />
         <button onClick={toggleVideo}>
           {videoEnabled ? "Turn off Video" : "Turn on Video"}
         </button>
         <button onClick={toggleAudio}>
           {audioEnabled ? "Turn off Audio" : "Turn on Audio"}
         </button>
+        <button
+          onClick={() => {
+            toggleMode();
+          }}
+        >
+          toggle Mode : {globalMode ? "Global" : "Local"}
+        </button>
       </div>
+      {!globalMode && <TestVideoSet localStream={localStream} />}
     </div>
   );
 };
