@@ -4,9 +4,16 @@ import { getNamespace } from "../sockets";
 import { SOCKET_EVENTS, SOCKET_NAMESPACES } from "../constants/socket";
 import { delay } from "../utils/delay";
 import db from "../config/db";
+import { z } from "zod";
+
+const createChannelSchema = z.object({
+  name: z.string().min(1),
+  serverId: z.number().int(),
+  type: z.enum(["TEXT", "VOICE"]).optional().default("TEXT"),
+});
 
 export const createChannel = async (req: Request, res: Response) => {
-  const { name, serverId } = req.body;
+  const { name, serverId, type } = createChannelSchema.parse(req.body);
   const userId = req.user.id;
 
   try {
@@ -33,6 +40,7 @@ export const createChannel = async (req: Request, res: Response) => {
         name,
         serverId,
         ownerId: userId,
+        ...(type && { type }),
       },
     });
 
@@ -41,6 +49,13 @@ export const createChannel = async (req: Request, res: Response) => {
 
     res.status(201).json(channel);
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({
+        errorCode: ERROR_CODES.INVALID_REQUEST,
+        message: error.errors,
+      });
+    }
+
     console.log(error);
 
     res.status(500).json({

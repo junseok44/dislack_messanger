@@ -1,4 +1,5 @@
 import {
+  ChannelType,
   getAllMessagesResponse,
   getAllUserServersWithChannelsResponse,
   Message,
@@ -169,8 +170,8 @@ const useCreateChannel = ({
   const { showToast } = useToast();
 
   return useMutation({
-    mutationFn: (data: { name: string; serverId: number }) =>
-      createChannel(data.name, data.serverId),
+    mutationFn: (data: { name: string; serverId: number; type: ChannelType }) =>
+      createChannel(data.name, data.serverId, data.type),
     onSuccess: async () => {
       successCallback && successCallback();
     },

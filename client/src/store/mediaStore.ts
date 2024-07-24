@@ -7,6 +7,9 @@ interface RemoteStream {
 }
 
 interface StoreState {
+  mediaRoomId: number | null;
+  setMediaRoomId: (roomId: number | null) => void;
+
   localStream: MediaStream | null;
   setLocalStream: (stream: MediaStream | null) => void;
 
@@ -25,9 +28,19 @@ interface StoreState {
   globalMode: boolean;
   setGlobalMode: (mode: boolean) => void;
   toggleMode: () => void;
+
+  disconnect: () => void;
 }
 
 const useMediaChatStore = create<StoreState>((set) => ({
+  mediaRoomId: null,
+  setMediaRoomId: (roomId) =>
+    set(() => ({
+      mediaRoomId: roomId,
+      videoEnabled: true,
+      audioEnabled: true,
+    })),
+
   localStream: null,
   setLocalStream: (stream) => set(() => ({ localStream: stream })),
 
@@ -43,6 +56,7 @@ const useMediaChatStore = create<StoreState>((set) => ({
       }
       return state;
     }),
+
   removeRemoteStream: (id) =>
     set((state) => ({
       remoteStreams: state.remoteStreams.filter((stream) => stream.id !== id),
@@ -59,9 +73,13 @@ const useMediaChatStore = create<StoreState>((set) => ({
       audioEnabled: audio,
     })),
 
-  globalMode: false,
+  globalMode: true,
   setGlobalMode: (mode) => set(() => ({ globalMode: mode })),
   toggleMode: () => set((state) => ({ globalMode: !state.globalMode })),
+
+  disconnect: () => {
+    set(() => ({ mediaRoomId: null }));
+  },
 }));
 
 export default useMediaChatStore;

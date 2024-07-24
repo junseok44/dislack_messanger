@@ -34,8 +34,6 @@ const ProductsPage = () => {
     }
   };
 
-  console.log(user.planId);
-
   return (
     <div className="bg-black text-white min-h-screen">
       <FullScreenCenter>

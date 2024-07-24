@@ -4,21 +4,18 @@ import useMediaChatStore from "@/store/mediaStore";
 import React, { useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 
-interface UseMediaChatProps {
-  roomId: number;
-}
-
 export interface RemoteStream {
   id: string;
   stream: MediaStream;
 }
 
-const useMediaChat = ({ roomId }: UseMediaChatProps) => {
+const useMediaChat = () => {
   const socket = useRef<Socket | null>(null);
   const peerConnections = useRef<{ [id: string]: RTCPeerConnection }>({});
   const isLocalStreamReady = useRef<boolean>(false);
 
   const {
+    mediaRoomId: roomId,
     audioEnabled,
     videoEnabled,
     localStream,
@@ -27,8 +24,10 @@ const useMediaChat = ({ roomId }: UseMediaChatProps) => {
     removeRemoteStream,
     resetRemoteStreams,
     remoteStreams,
+    globalMode,
   } = useMediaChatStore();
 
+  // roomId가 있을때, startMedia하고 localStream을 설정한다.
   useEffect(() => {
     if (!roomId) return;
 
@@ -48,24 +47,23 @@ const useMediaChat = ({ roomId }: UseMediaChatProps) => {
     startMedia();
   }, [roomId]);
 
+  // roomId가 생기고, 그로 인해 startMedia가 실행되면, 소켓 연결을 한다.
   useEffect(() => {
     if (!roomId || !localStream) return;
 
+    // 소켓 연결하기
     if (!socket.current) {
       socket.current = io(
         process.env.REACT_APP_API_URL + SOCKET_NAMESPACES.MEDIA_CHAT
       );
 
-      socket.current.emit(SOCKET_EVENTS.MEDIA_CHAT.JOIN, roomId);
-
+      // 이런 핸들러들은 방 바뀔때마다 등록할 필요가 있나? ㄴㄴ.
       socket.current.on(SOCKET_EVENTS.MEDIA_CHAT.NEW_PEER, ({ peerId }) => {
         createPeerConnection(peerId);
         sendOffer(peerId);
       });
 
       socket.current.on(SOCKET_EVENTS.MEDIA_CHAT.PEER_LEFT, ({ peerId }) => {
-        console.log("Peer left", peerId);
-
         if (peerConnections.current[peerId]) {
           peerConnections.current[peerId].close();
           delete peerConnections.current[peerId];
@@ -95,42 +93,30 @@ const useMediaChat = ({ roomId }: UseMediaChatProps) => {
         }
       );
     }
+
+    socket.current.emit(SOCKET_EVENTS.MEDIA_CHAT.JOIN, roomId);
+
+    // localStream을 deps로 등록하는 이유는?
   }, [roomId, localStream]);
 
+  // 새로고침, 혹은 다른 room으로의 변경, 혹은 아예 연결끊기시에 어떻게 할지.
   useEffect(() => {
-    const handleBeforeUnload = () => {
-      console.log("Unmounting media chat component", roomId, socket.current);
-
-      // Emit PEER_LEFT event when the component unmounts
-      if (socket.current) {
-        socket.current.emit(SOCKET_EVENTS.MEDIA_CHAT.LEAVE, roomId, () => {
-          socket.current?.disconnect();
-        });
-      }
-
-      // Close all peer connections
-      Object.keys(peerConnections.current).forEach((peerId) => {
-        peerConnections.current[peerId].close();
-        delete peerConnections.current[peerId];
-      });
-
-      // Stop all local media tracks
-      if (localStream) {
-        localStream.getTracks().forEach((track) => track.stop());
-      }
-
-      // Clean up remote video elements
-      resetRemoteStreams();
-    };
-
     window.addEventListener("beforeunload", handleBeforeUnload);
+
+    // 만약 roomId가 없다면, 소켓 연결을 완전히 끊는다.
+    if (socket.current && !roomId) {
+      console.log("Disconnecting socket");
+      socket.current.disconnect();
+      socket.current = null;
+    }
 
     return () => {
       handleBeforeUnload();
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, []);
+  }, [roomId]);
 
+  // 비디오, 오디오 트랙 활성화/비활성화
   useEffect(() => {
     if (localStream) {
       localStream.getTracks().forEach((track) => {
@@ -155,6 +141,39 @@ const useMediaChat = ({ roomId }: UseMediaChatProps) => {
       });
     }
   }, [videoEnabled, audioEnabled, localStream]);
+
+  // roomId가 바뀌거나, 새로고침될때는 모든 peerConnections를 닫고, leave한다.
+  const handleBeforeUnload = () => {
+    if (!roomId) return;
+
+    console.log("Leaving room", roomId);
+
+    if (socket.current) {
+      socket.current.emit(SOCKET_EVENTS.MEDIA_CHAT.LEAVE, roomId);
+    }
+
+    // Close all peer connections
+    Object.keys(peerConnections.current).forEach((peerId) => {
+      peerConnections.current[peerId].close();
+      delete peerConnections.current[peerId];
+    });
+
+    peerConnections.current = {};
+
+    // localStream의 각 track을 stop하는거랑.
+    // localStream 자체를 지워버리는거랑 차이는?
+
+    // 방을 옮기는 경우. -> stop하지만 어차피, localStream을 다시 set해주고 있음.
+    // 연결을 아예 끊는 경우 -> localStream을 null이지만,
+
+    if (localStream) {
+      localStream.getTracks().forEach((track) => track.stop());
+    }
+
+    // Clean up remote video elements
+    resetRemoteStreams();
+    setLocalStream(null);
+  };
 
   const createPeerConnection = (peerId: string) => {
     const peerConnection = new RTCPeerConnection({
@@ -210,7 +229,6 @@ const useMediaChat = ({ roomId }: UseMediaChatProps) => {
     await peerConnection.setRemoteDescription(
       new RTCSessionDescription(sdpOffer)
     );
-    // console.log("Handling offer from", from);
 
     const answer = await peerConnection.createAnswer();
     await peerConnection.setLocalDescription(answer);
@@ -228,7 +246,6 @@ const useMediaChat = ({ roomId }: UseMediaChatProps) => {
     from: string
   ) => {
     const peerConnection = peerConnections.current[from];
-    // console.log("Handling answer from", from);
 
     if (peerConnection && peerConnection.signalingState !== "closed") {
       await peerConnection.setRemoteDescription(
@@ -260,7 +277,6 @@ const useMediaChat = ({ roomId }: UseMediaChatProps) => {
       );
       localStream.getTracks().forEach((track) => {
         if (!existingTracks.has(track)) {
-          console.log(`Adding track ${track.kind} to peer connection`);
           peerConnection.addTrack(track, localStream!);
         }
       });

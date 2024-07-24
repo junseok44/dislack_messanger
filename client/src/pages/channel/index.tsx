@@ -1,15 +1,19 @@
+import { ChannelType } from "@/@types/channel";
 import { PAGE_ROUTE } from "@/constants/routeName";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserServersWithChannels } from "@/hooks/server";
 import useAutoScroll from "@/hooks/useAutoScroll";
+import useModal from "@/hooks/useModal";
 import useToast from "@/hooks/useToast";
+import useMediaChatStore from "@/store/mediaStore";
 import { useCallback, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import LoadingPage from "../@common/LoadingPage";
 import ChannelSideBar from "./components/ChannelSideBar";
-import MessageInput from "./components/MessageInput";
-import { useChannelSocket } from "./hooks";
 import MediaChat from "./components/MediaChat";
+import MessageInput from "./components/MessageInput";
+import MessageList from "./components/MessageList";
+import { useChannelSocket } from "./hooks";
 
 const Channel = () => {
   const { data: allServers } = useUserServersWithChannels();
@@ -32,6 +36,11 @@ const Channel = () => {
   useChannelSocket(channelId);
 
   const { showToast } = useToast();
+
+  const { showModalWithControls, closeModal } = useModal();
+
+  const { globalMode, mediaRoomId, setGlobalMode, setMediaRoomId } =
+    useMediaChatStore();
 
   // 현재 채널이 존재하는지 확인.
   // 이 작업도 지금 매번 렌더링될때마다 하고 있다.
@@ -63,6 +72,10 @@ const Channel = () => {
           message: "해당 채널을 찾을 수 없습니다.",
           type: "error",
         });
+        if (mediaRoomId === parsedChannelId) {
+          setMediaRoomId(null);
+          setGlobalMode(true);
+        }
         if (server.channels.length > 0) {
           navigate(PAGE_ROUTE.GOTO_CHANNEL(server.id, server.channels[0].id));
           return;
@@ -84,11 +97,32 @@ const Channel = () => {
   );
 
   const onClickChannels = useCallback(
-    (channelId: number) => {
+    (channelId: number, channelType: ChannelType) => {
       if (!currentServer) return;
-      navigate(PAGE_ROUTE.GOTO_CHANNEL(currentServer.id, channelId));
+
+      if (channelType === ChannelType.TEXT) {
+        navigate(PAGE_ROUTE.GOTO_CHANNEL(currentServer.id, channelId));
+        return;
+      }
+
+      if (mediaRoomId) {
+        if (mediaRoomId !== channelId) {
+          showModalWithControls({
+            title: "이미 다른 음성 채팅방에 들어와있어요",
+            text: "채팅방을 변경하면 기존 채팅방에서 나가게 됩니다. 계속 진행하시겠어요?",
+            onConfirm: () => {
+              setMediaRoomId(channelId);
+              closeModal();
+            },
+          });
+        } else {
+          navigate(PAGE_ROUTE.GOTO_CHANNEL(currentServer.id, channelId));
+        }
+      } else {
+        setMediaRoomId(channelId);
+      }
     },
-    [navigate, currentServer]
+    [navigate, currentServer, mediaRoomId]
   );
 
   if (!allServers || !currentServer || !currentChannel || !channels) {
@@ -112,22 +146,25 @@ const Channel = () => {
           )}
         </div>
         <div className="flex-grow flex flex-col overflow-auto">
-          <div>
-            <MediaChat />
-            {/* <MessageList
-            listEndRef={listEndRef}
-            parsedChannelId={parsedChannelId}
-            channelName={
-              currentChannel ? currentChannel.name : "Channel not found"
-            }
-            lastSeenMessageId={currentChannel?.lastSeenMessageId}
-          /> */}
-            <MessageInput
-              scrollToBottom={scrollToBottom}
-              parsedChannelId={parsedChannelId}
-              parsedServerId={currentServer.id}
-            />
-          </div>
+          {currentChannel.type == ChannelType.VOICE ? (
+            <MediaChat currentChannelId={currentChannel.id} />
+          ) : (
+            <>
+              <MessageList
+                listEndRef={listEndRef}
+                parsedChannelId={parsedChannelId}
+                channelName={
+                  currentChannel ? currentChannel.name : "Channel not found"
+                }
+                lastSeenMessageId={currentChannel?.lastSeenMessageId}
+              />
+              <MessageInput
+                scrollToBottom={scrollToBottom}
+                parsedChannelId={parsedChannelId}
+                parsedServerId={currentServer.id}
+              />
+            </>
+          )}
         </div>
       </div>
     </div>

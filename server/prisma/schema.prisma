@@ -47,11 +47,18 @@ model Server {
 
 }
 
+enum ChannelType {
+  TEXT
+  VOICE
+}
+
 model Channel {
   id        Int     @id @default(autoincrement())
   name      String 
   ownerId   Int
   owner     User    @relation(fields: [ownerId], references: [id])
+
+  type      ChannelType @default(TEXT)
 
   serverId  Int
   server    Server  @relation(fields: [serverId], references: [id], onDelete: Cascade)

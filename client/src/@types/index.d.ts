@@ -1,6 +1,12 @@
+enum ChannelType {
+  TEXT = "TEXT",
+  VOICE = "VOICE",
+}
+
 export interface Channel {
   id: number;
   name: string;
+  type: ChannelType;
   ownerId: number;
   protected: boolean;
   serverId: number;
@@ -10,7 +16,6 @@ export interface Channel {
 export interface ChannelResponse extends Channel {
   lastSeenMessageId: number | null;
 }
-1;
 
 export interface Server {
   id: number;

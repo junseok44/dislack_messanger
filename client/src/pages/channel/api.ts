@@ -1,9 +1,14 @@
+import { ChannelType } from "@/@types";
 import { CHANNEL_MESSAGE_LIMIT } from "@/constants";
 import { API_ROUTE } from "@/constants/routeName";
 import { api } from "@/lib/api";
 
-export const createChannel = async (name: string, serverId: number) => {
-  await api.post(API_ROUTE.CHANNEL.CREATE, { name, serverId });
+export const createChannel = async (
+  name: string,
+  serverId: number,
+  type: ChannelType
+) => {
+  await api.post(API_ROUTE.CHANNEL.CREATE, { name, serverId, type });
 };
 
 export const deleteChannel = async (id: number) => {

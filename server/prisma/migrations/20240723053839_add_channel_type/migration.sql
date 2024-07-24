@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `Channel` ADD COLUMN `type` ENUM('TEXT', 'VOICE') NOT NULL DEFAULT 'TEXT';
