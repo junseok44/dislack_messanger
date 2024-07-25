@@ -1,9 +1,9 @@
-import { useUserServersWithChannels } from "@/hooks/server";
 import LoadingPage from "../@common/LoadingPage";
 import ErrorPage from "../@common/ErrorPage";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PAGE_ROUTE } from "@/constants/routeName";
+import { useUserServersWithChannels } from "@/hooks/server";
 
 const Home = () => {
   const { data: allServers, isLoading, isError } = useUserServersWithChannels();

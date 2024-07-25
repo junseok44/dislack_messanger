@@ -12,6 +12,7 @@ import {
 import ErrorFallback from "./components/utils/ErrorFallback";
 import ModalProvider from "./contexts/ModalContext";
 import ToastProvider from "./contexts/ToastContext";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
@@ -27,6 +28,7 @@ const queryClient = new QueryClient({
 
 root.render(
   <QueryClientProvider client={queryClient}>
+    <ReactQueryDevtools initialIsOpen={false} />
     <ErrorBoundary FallbackComponent={ErrorFallback} onReset={() => {}}>
       <BrowserRouter>
         <AuthProvider>

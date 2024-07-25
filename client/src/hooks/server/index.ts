@@ -119,7 +119,6 @@ export const useUserServersWithChannels = () => {
       return updatedServers;
     },
     retry: false,
-    staleTime: Infinity,
   });
 };
 

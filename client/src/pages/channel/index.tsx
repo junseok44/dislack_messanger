@@ -1,7 +1,6 @@
 import { ChannelType } from "@/@types/channel";
 import { PAGE_ROUTE } from "@/constants/routeName";
 import { useAuth } from "@/contexts/AuthContext";
-import { useUserServersWithChannels } from "@/hooks/server";
 import useAutoScroll from "@/hooks/useAutoScroll";
 import useModal from "@/hooks/useModal";
 import useToast from "@/hooks/useToast";
@@ -14,6 +13,7 @@ import MediaChat from "./components/MediaChat";
 import MessageInput from "./components/MessageInput";
 import MessageList from "./components/MessageList";
 import { useChannelSocket } from "./hooks";
+import { useUserServersWithChannels } from "@/hooks/server";
 
 const Channel = () => {
   const { data: allServers } = useUserServersWithChannels();
@@ -39,8 +39,7 @@ const Channel = () => {
 
   const { showModalWithControls, closeModal } = useModal();
 
-  const { globalMode, mediaRoomId, setGlobalMode, setMediaRoomId } =
-    useMediaChatStore();
+  const { mediaRoomId, setGlobalMode, setMediaRoomId } = useMediaChatStore();
 
   // 현재 채널이 존재하는지 확인.
   // 이 작업도 지금 매번 렌더링될때마다 하고 있다.
