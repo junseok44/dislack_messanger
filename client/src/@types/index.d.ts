@@ -1,8 +1,16 @@
+export interface User {
+  username: string;
+  id: number;
+  planId: number;
+  thumbnail?: string;
+}
+
 enum ChannelType {
   TEXT = "TEXT",
   VOICE = "VOICE",
 }
 
+// 클라이언트에서 사용하는 타입 정의.
 export interface Channel {
   id: number;
   name: string;
@@ -11,9 +19,7 @@ export interface Channel {
   protected: boolean;
   serverId: number;
   lastMessageId: number | null;
-}
-
-export interface ChannelResponse extends Channel {
+  channelParticipants: User[];
   lastSeenMessageId: number | null;
 }
 
@@ -21,17 +27,9 @@ export interface Server {
   id: number;
   name: string;
   ownerId: number;
-  created_at: string;
   inviteCode: string;
-  channels: ChannelResponse[];
+  channels: Channel[];
 }
-
-export type ServerResponse = Pick<
-  Server,
-  "id" | "name" | "ownerId" | "channels" | "inviteCode"
->;
-
-export type getAllUserServersWithChannelsResponse = ServerResponse[];
 
 interface Message {
   id: number;

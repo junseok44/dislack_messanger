@@ -17,6 +17,8 @@ export const SOCKET_EVENTS = {
     CHANNEL_UPDATE_LAST_MESSAGE_ID:
       "server_channelUpdateLastMessageId" as const,
     CHANNEL_UPDATE_PARTICIPANTS: "channels_updateChannelParticipants" as const,
+    ADD_USER_TO_CHANNEL: "channels_addUserToChannel" as const,
+    REMOVE_USER_FROM_CHANNEL: "channels_removeUserFromChannel" as const,
   },
   MEDIA_CHAT: {
     CONNECTION: "connection" as const,

@@ -1,9 +1,9 @@
 import {
   ChannelType,
   getAllMessagesResponse,
-  getAllUserServersWithChannelsResponse,
   Message,
   MessageWithAuthor,
+  Server,
 } from "@/@types";
 import { QUERY_KEYS } from "@/constants/queryKeys";
 import { API_ROUTE } from "@/constants/routeName";
@@ -217,7 +217,7 @@ const useUpdateLastSeenMessage = () => {
   return useMutation<unknown, Error, { channelId: number | string }>({
     mutationFn: ({ channelId }) => updateLastSeenMessage(channelId),
     onSuccess: async (_, { channelId }) => {
-      queryClient.setQueryData<getAllUserServersWithChannelsResponse>(
+      queryClient.setQueryData<Server[]>(
         QUERY_KEYS.USER_SERVERS_WITH_CHANNELS,
         (data) => {
           if (!data) return data;

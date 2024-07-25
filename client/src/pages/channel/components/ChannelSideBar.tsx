@@ -1,5 +1,4 @@
-import { ChannelResponse, ChannelType, Server } from "@/@types";
-import { useDeleteServer } from "@/hooks/server";
+import { Channel, Server } from "@/@types";
 import useModal from "@/hooks/useModal";
 import { hasNewMessageOnChannel } from "@/utils/hasNewMessageOnChannel";
 import { memo } from "react";
@@ -7,6 +6,72 @@ import { useParams } from "react-router-dom";
 import { useDeleteChannel } from "../hooks";
 import CreateChannelForm from "./CreateChannelForm";
 import useMediaChatStore from "@/store/mediaStore";
+import { ChannelType } from "@/@types/channel";
+import { useDeleteServer } from "@/hooks/server";
+
+const ChannelItem = ({
+  channel,
+  onClickChannel,
+  isOwner,
+  onClickDeleteChannel,
+  currentChannelId,
+}: {
+  channel: Channel;
+  onClickChannel: (channelId: number, channelType: ChannelType) => void;
+  isOwner: boolean;
+  onClickDeleteChannel: (channelId: number) => void;
+  currentChannelId?: number;
+}) => {
+  // if (channel.type === ChannelType.VOICE)
+  // console.log(channel.channelParticipants);
+
+  const getCurrentChannelStyle = (channelId: number) => {
+    return channelId === currentChannelId
+      ? "text-secondary-light"
+      : "text-white";
+  };
+
+  return (
+    <div className="flex flex-col">
+      <div
+        className={`h-12 flex items-center cursor-pointer justify-between ${
+          channel.id === 1 ? "text-secondary-light" : "text-white"
+        }`}
+        onClick={() => onClickChannel(channel.id, channel.type)}
+      >
+        <div className="flex items-center gap-4">
+          {hasNewMessageOnChannel(
+            channel.lastMessageId,
+            channel.lastSeenMessageId
+          ) && <div className="w-2 h-2 bg-green-500 rounded-full" />}
+          <span className={`${getCurrentChannelStyle(channel.id)}`}>
+            {channel.name}
+          </span>
+        </div>
+        {isOwner && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onClickDeleteChannel(channel.id);
+            }}
+          >
+            채널 삭제
+          </button>
+        )}
+      </div>
+      <div className="ml-4 flex flex-col">
+        {channel.type === ChannelType.VOICE &&
+          channel.channelParticipants.map((participant) => {
+            return (
+              <span key={participant.id} className="text-xs text-gray-400">
+                {participant.username}
+              </span>
+            );
+          })}
+      </div>
+    </div>
+  );
+};
 
 const ChannelSideBar = ({
   channels,
@@ -14,7 +79,7 @@ const ChannelSideBar = ({
   onClickChannels,
   userId,
 }: {
-  channels: ChannelResponse[];
+  channels: Channel[];
   server: Pick<Server, "id" | "name" | "inviteCode" | "ownerId">;
   onClickChannels: (channelId: number, channelType: ChannelType) => void;
   userId?: number;
@@ -72,12 +137,6 @@ const ChannelSideBar = ({
     });
   };
 
-  const getCurrentChannelStyle = (channelId: number) => {
-    return channelId === parsedChannelId
-      ? "text-secondary-light"
-      : "text-white";
-  };
-
   return (
     <div className="w-60 bg-secondary-dark h-full flex-shrink-0 flex flex-col">
       <div className="mb-4">
@@ -99,31 +158,14 @@ const ChannelSideBar = ({
       <div className="flex-grow">
         {channels.map((channel) => {
           return (
-            <div
+            <ChannelItem
               key={channel.id}
-              className={`h-12 bg-secondary-dark flex items-center cursor-pointer justify-between ${getCurrentChannelStyle(
-                channel.id
-              )}`}
-              onClick={() => onClickChannels(channel.id, channel.type)}
-            >
-              <div className="flex items-center gap-4">
-                {hasNewMessageOnChannel(
-                  channel.lastMessageId,
-                  channel.lastSeenMessageId
-                ) && <div className="w-2 h-2 bg-green-500 rounded-full" />}
-                <span>{channel.name}</span>
-              </div>
-              {server.ownerId === userId && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteChannel(channel.id);
-                  }}
-                >
-                  채널 삭제
-                </button>
-              )}
-            </div>
+              channel={channel}
+              onClickChannel={onClickChannels}
+              isOwner={server.ownerId === userId}
+              onClickDeleteChannel={handleDeleteChannel}
+              currentChannelId={parsedChannelId}
+            />
           );
         })}
       </div>

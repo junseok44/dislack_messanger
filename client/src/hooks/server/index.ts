@@ -1,17 +1,18 @@
-import {
-  getAllUserServersWithChannelsResponse,
-  ServerResponse,
-} from "@/@types";
-import { createServer, deleteServer, joinServer } from "@/api/server";
+import { Server } from "@/@types";
 import { QUERY_KEYS } from "@/constants/queryKeys";
 import { API_ROUTE, PAGE_ROUTE } from "@/constants/routeName";
 import { api, ApiError } from "@/lib/api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import useToast from "./useToast";
-import useModal from "./useModal";
+import useToast from "../useToast";
+import useModal from "../useModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { getUserPlan } from "@/constants/stripe";
+import { createServer, deleteServer, joinServer } from "@/api/server";
+import {
+  getAllUserServersWithChannelsResponse,
+  ServerResponse,
+} from "@/api/server/types";
 
 export const useCreateServer = () => {
   const queryClient = useQueryClient();
@@ -28,11 +29,20 @@ export const useCreateServer = () => {
       closeModal();
     },
     onSuccess: async (newServer) => {
-      queryClient.setQueryData<getAllUserServersWithChannelsResponse>(
+      queryClient.setQueryData<Server[]>(
         QUERY_KEYS.USER_SERVERS_WITH_CHANNELS,
         (oldData) => {
           if (!oldData) return oldData;
-          return [...oldData, newServer];
+
+          const newServerWithChannels: Server = {
+            ...newServer,
+            channels: newServer.channels.map((channel) => ({
+              ...channel,
+              channelParticipants: [],
+            })),
+          };
+
+          return [...oldData, newServerWithChannels];
         }
       );
 
@@ -89,10 +99,24 @@ export const useDeleteServer = () => {
 };
 
 export const useUserServersWithChannels = () => {
-  return useQuery<getAllUserServersWithChannelsResponse>({
+  return useQuery<Server[]>({
     queryKey: QUERY_KEYS.USER_SERVERS_WITH_CHANNELS,
-    queryFn: async ({ queryKey, pageParam }) => {
-      return api.get(API_ROUTE.SERVER.GET_USER_SERVERS_WITH_CHANNELS, {});
+    queryFn: async () => {
+      const servers: getAllUserServersWithChannelsResponse = await api.get(
+        API_ROUTE.SERVER.GET_USER_SERVERS_WITH_CHANNELS,
+        {}
+      );
+
+      // 각 채널에 `channelParticipants` 필드를 추가합니다.
+      const updatedServers = servers.map((server) => ({
+        ...server,
+        channels: server.channels.map((channel) => ({
+          ...channel,
+          channelParticipants: [], // 기본값으로 빈 배열 추가
+        })),
+      }));
+
+      return updatedServers;
     },
     retry: false,
     staleTime: Infinity,
@@ -109,11 +133,20 @@ export const useJoinServer = ({}: {}) => {
   return useMutation<ServerResponse, ApiError, string>({
     mutationFn: (inviteCode: string) => joinServer({ inviteCode }),
     onSuccess: (newServer) => {
-      queryClient.setQueryData<getAllUserServersWithChannelsResponse>(
+      queryClient.setQueryData<Server[]>(
         QUERY_KEYS.USER_SERVERS_WITH_CHANNELS,
         (oldData) => {
           if (!oldData) return oldData;
-          return [...oldData, newServer];
+
+          const newServerWithChannels: Server = {
+            ...newServer,
+            channels: newServer.channels.map((channel) => ({
+              ...channel,
+              channelParticipants: [],
+            })),
+          };
+
+          return [...oldData, newServerWithChannels];
         }
       );
 
@@ -137,7 +170,23 @@ export const useJoinServer = ({}: {}) => {
 export const useGetUserServersWithChannels = () => {
   const queryClient = useQueryClient();
 
-  return queryClient.getQueryData<getAllUserServersWithChannelsResponse>([
+  return queryClient.getQueryData<Server[]>([
     API_ROUTE.SERVER.GET_USER_SERVERS_WITH_CHANNELS,
   ]);
+};
+
+export const useGetCurrentServerFromChannelId = (channelId: number | null) => {
+  const queryClient = useQueryClient();
+
+  if (!channelId) return undefined;
+
+  const allServer = queryClient.getQueryData<Server[]>([
+    API_ROUTE.SERVER.GET_USER_SERVERS_WITH_CHANNELS,
+  ]);
+
+  if (!allServer) return undefined;
+
+  return allServer.find((server) =>
+    server.channels.some((channel) => channel.id === channelId)
+  );
 };

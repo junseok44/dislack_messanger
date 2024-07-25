@@ -1,15 +1,13 @@
-import { Channel, getAllUserServersWithChannelsResponse } from "@/@types";
+import { Channel, Server, User } from "@/@types";
 import { QUERY_KEYS } from "@/constants/queryKeys";
-import { PAGE_ROUTE } from "@/constants/routeName";
 import { SOCKET_EVENTS, SOCKET_NAMESPACES } from "@/constants/sockets";
+import { useAuth } from "@/contexts/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { io } from "socket.io-client";
-import { useUserServersWithChannels } from "./server";
-import { useAuth } from "@/contexts/AuthContext";
+import { useUserServersWithChannels } from ".";
 
-// TODO: 나중에 테스트할 부분. 만약 해당 서버, 해당 채널에 있었는데 삭제되었다? 그러면 navigate 되어야 함.
 // 이 부분 socket 연결 자체도 바꿔야 함. 해당 컴포넌트 마운트될때로 바꿀 것.
 const socket = io(
   process.env.REACT_APP_API_URL + SOCKET_NAMESPACES.SERVER || ""
@@ -38,7 +36,7 @@ export const useServerSocket = () => {
 
   const handleAddChannel = useCallback(
     ({ channel }: { channel: Channel }) => {
-      queryClient.setQueryData<getAllUserServersWithChannelsResponse>(
+      queryClient.setQueryData<Server[]>(
         QUERY_KEYS.USER_SERVERS_WITH_CHANNELS,
         (data) => {
           if (!data) {
@@ -51,7 +49,11 @@ export const useServerSocket = () => {
                 ...server,
                 channels: [
                   ...server.channels,
-                  { ...channel, lastSeenMessageId: null },
+                  {
+                    ...channel,
+                    lastSeenMessageId: null,
+                    channelParticipants: [],
+                  },
                 ],
               };
             }
@@ -68,7 +70,7 @@ export const useServerSocket = () => {
 
   const handleDeleteChannel = useCallback(
     ({ serverId, channelId }: { serverId: number; channelId: number }) => {
-      queryClient.setQueryData<getAllUserServersWithChannelsResponse>(
+      queryClient.setQueryData<Server[]>(
         QUERY_KEYS.USER_SERVERS_WITH_CHANNELS,
         (data) => {
           if (!data) {
@@ -99,7 +101,7 @@ export const useServerSocket = () => {
     ({ serverId }: { serverId: number }) => {
       console.log("Server deleted:", serverId, currentServerId);
 
-      queryClient.setQueryData<getAllUserServersWithChannelsResponse>(
+      queryClient.setQueryData<Server[]>(
         QUERY_KEYS.USER_SERVERS_WITH_CHANNELS,
         (data) => {
           if (!data) {
@@ -127,7 +129,7 @@ export const useServerSocket = () => {
       lastMessageId: number;
       authorId: number;
     }) => {
-      queryClient.setQueryData<getAllUserServersWithChannelsResponse>(
+      queryClient.setQueryData<Server[]>(
         QUERY_KEYS.USER_SERVERS_WITH_CHANNELS,
 
         (data) => {
@@ -167,12 +169,103 @@ export const useServerSocket = () => {
     [queryClient]
   );
 
+  const handleAddUserToChannel = useCallback(
+    ({
+      channelId,
+      user,
+      serverId,
+    }: {
+      channelId: number;
+      user: User;
+      serverId: number;
+    }) => {
+      queryClient.setQueryData<Server[]>(
+        QUERY_KEYS.USER_SERVERS_WITH_CHANNELS,
+        (data) => {
+          if (!data) {
+            return data;
+          }
+
+          const updatedData = data.map((server) => {
+            if (server.id !== serverId) {
+              return server;
+            }
+
+            return {
+              ...server,
+              channels: server.channels.map((channel) => {
+                if (channel.id === channelId) {
+                  return {
+                    ...channel,
+                    channelParticipants: [...channel.channelParticipants, user],
+                  };
+                }
+
+                return channel;
+              }),
+            };
+          });
+
+          return updatedData;
+        }
+      );
+    },
+    [queryClient]
+  );
+
+  const handleRemoveUserFromChannel = useCallback(
+    ({
+      channelId,
+      userId,
+      serverId,
+    }: {
+      channelId: number;
+      userId: number;
+      serverId: number;
+    }) => {
+      console.log("Removing user from channel:", channelId, userId, serverId);
+
+      queryClient.setQueryData<Server[]>(
+        QUERY_KEYS.USER_SERVERS_WITH_CHANNELS,
+        (data) => {
+          if (!data) {
+            return data;
+          }
+
+          const updatedData = data.map((server) => {
+            if (server.id !== serverId) {
+              return server;
+            }
+
+            return {
+              ...server,
+              channels: server.channels.map((channel) => {
+                if (channel.id === channelId) {
+                  return {
+                    ...channel,
+                    channelParticipants: channel.channelParticipants.filter(
+                      (user) => user.id !== userId
+                    ),
+                  };
+                }
+
+                return channel;
+              }),
+            };
+          });
+
+          return updatedData;
+        }
+      );
+    },
+    [queryClient]
+  );
+
   useEffect(() => {
     if (!allServerIds) {
       return;
     }
 
-    // console.log("Subscribing to servers:", allServerIds);
     socket.emit(SOCKET_EVENTS.SERVER.SUBSCRIBE_SERVER, allServerIds);
 
     socket.on(SOCKET_EVENTS.SERVER.DELETE_SERVER, handleDeleteServer);
@@ -181,6 +274,11 @@ export const useServerSocket = () => {
     socket.on(
       SOCKET_EVENTS.SERVER.CHANNEL_UPDATE_LAST_MESSAGE_ID,
       handleUpdateLastMessageId
+    );
+    socket.on(SOCKET_EVENTS.SERVER.ADD_USER_TO_CHANNEL, handleAddUserToChannel);
+    socket.on(
+      SOCKET_EVENTS.SERVER.REMOVE_USER_FROM_CHANNEL,
+      handleRemoveUserFromChannel
     );
 
     return () => {
@@ -193,6 +291,14 @@ export const useServerSocket = () => {
       socket.off(
         SOCKET_EVENTS.SERVER.CHANNEL_UPDATE_LAST_MESSAGE_ID,
         handleUpdateLastMessageId
+      );
+      socket.off(
+        SOCKET_EVENTS.SERVER.ADD_USER_TO_CHANNEL,
+        handleAddUserToChannel
+      );
+      socket.off(
+        SOCKET_EVENTS.SERVER.REMOVE_USER_FROM_CHANNEL,
+        handleRemoveUserFromChannel
       );
     };
   }, [allServerIds]);

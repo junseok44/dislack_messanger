@@ -1,4 +1,5 @@
 // src/contexts/AuthContext.tsx
+import { User } from "@/@types";
 import { API_ROUTE } from "@/constants/routeName";
 import useCheckUser from "@/hooks/useCheckUser";
 import { api, ApiError } from "@/lib/api";
@@ -18,12 +19,6 @@ interface AuthContextType {
   authError: boolean;
   login: (user: User) => void;
   logout: (redirectUrl?: string) => void;
-}
-
-interface User {
-  username: string;
-  id: number;
-  planId: number;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);

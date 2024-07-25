@@ -1,12 +1,12 @@
 import { PAGE_ROUTE } from "@/constants/routeName";
-import { useUserServersWithChannels } from "@/hooks/server";
 import { useLocation, useNavigate } from "react-router-dom";
 import CreateServerForm from "./CreateServerForm";
 import InviteServerForm from "./InviteServerForm";
 import useModal from "@/hooks/useModal";
-import { ServerResponse } from "@/@types";
 import { hasNewMessageOnChannel } from "@/utils/hasNewMessageOnChannel";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserServersWithChannels } from "@/hooks/server";
+import { Server } from "@/@types";
 
 const SidebarButton = ({
   icon,
@@ -73,7 +73,7 @@ const Sidebar = () => {
     });
   };
 
-  const hasServerNewMessage = (server: ServerResponse) => {
+  const hasServerNewMessage = (server: Server) => {
     return server.channels.some((channel) =>
       hasNewMessageOnChannel(channel.lastMessageId, channel.lastSeenMessageId)
     );

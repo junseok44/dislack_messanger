@@ -1,4 +1,4 @@
-import { ChannelType } from "@/@types";
+import { ChannelType, getAllMessagesResponse } from "@/@types";
 import { CHANNEL_MESSAGE_LIMIT } from "@/constants";
 import { API_ROUTE } from "@/constants/routeName";
 import { api } from "@/lib/api";
@@ -19,7 +19,7 @@ export const fetchMessages = async (
   channelId: number,
   cursor: number | null
 ) => {
-  return api.get(API_ROUTE.MESSAGES.GET(channelId), {
+  return api.get<getAllMessagesResponse>(API_ROUTE.MESSAGES.GET(channelId), {
     params: { cursor, limit: CHANNEL_MESSAGE_LIMIT },
   });
 };

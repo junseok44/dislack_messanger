@@ -1,5 +1,7 @@
 // src/components/MediaChat.tsx
 import { SOCKET_EVENTS, SOCKET_NAMESPACES } from "@/constants/sockets";
+import { useAuth } from "@/contexts/AuthContext";
+import { useGetCurrentServerFromChannelId } from "@/hooks/server";
 import useMediaChatStore from "@/store/mediaStore";
 import React, { useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
@@ -14,6 +16,8 @@ const useMediaChat = () => {
   const peerConnections = useRef<{ [id: string]: RTCPeerConnection }>({});
   const isLocalStreamReady = useRef<boolean>(false);
 
+  const { user } = useAuth();
+
   const {
     mediaRoomId: roomId,
     audioEnabled,
@@ -27,27 +31,20 @@ const useMediaChat = () => {
     globalMode,
   } = useMediaChatStore();
 
+  const serverId = useGetCurrentServerFromChannelId(roomId)?.id;
+
   // roomId가 있을때, startMedia하고 localStream을 설정한다.
   useEffect(() => {
     if (!roomId) return;
-
-    const startMedia = async () => {
-      try {
-        const response = await navigator.mediaDevices.getUserMedia({
-          audio: audioEnabled,
-          video: videoEnabled,
-        });
-        setLocalStream(response);
-        isLocalStreamReady.current = true;
-      } catch (error) {
-        console.error("Error accessing media devices.", error);
-      }
-    };
 
     startMedia();
   }, [roomId]);
 
   // roomId가 생기고, 그로 인해 startMedia가 실행되면, 소켓 연결을 한다.
+  // localStream을 새롭게 설정하기 때문에,
+
+  // 지금 문제는, roomid가 바뀌고, emit을 두번을 해버림. 왜? roomid 바뀐 다음에 한번 실행. 이때는 localStream이 null되기 전이라 한번 실행.
+  // 그다음에 null 된다음에 다시 localstream이 생기고 나서 다시 보내줌.
   useEffect(() => {
     if (!roomId || !localStream) return;
 
@@ -94,16 +91,25 @@ const useMediaChat = () => {
       );
     }
 
-    socket.current.emit(SOCKET_EVENTS.MEDIA_CHAT.JOIN, roomId);
+    console.log("Joining room", roomId, localStream);
 
-    // localStream을 deps로 등록하는 이유는?
-  }, [roomId, localStream]);
+    socket.current.emit(SOCKET_EVENTS.MEDIA_CHAT.JOIN, {
+      roomId,
+      serverId,
+      user,
+    });
+
+    // localStream을 deps로 등록하는 이유는? addtrack부분에서 localstream이 있어야 전송이 되더라고.
+  }, [localStream]);
 
   // 새로고침, 혹은 다른 room으로의 변경, 혹은 아예 연결끊기시에 어떻게 할지.
   useEffect(() => {
     window.addEventListener("beforeunload", handleBeforeUnload);
 
     // 만약 roomId가 없다면, 소켓 연결을 완전히 끊는다.
+    // 그런데 문제는, 그저 단순히 unmount시에는, 이게 실행이 안될텐데, 그때는 roomid가 없다는것을 어떻게 판별할 것인지.
+    // 그렇지 않다면 socket연결이 끊기지가 않을것이다.
+
     if (socket.current && !roomId) {
       console.log("Disconnecting socket");
       socket.current.disconnect();
@@ -142,6 +148,21 @@ const useMediaChat = () => {
     }
   }, [videoEnabled, audioEnabled, localStream]);
 
+  const startMedia = async () => {
+    try {
+      const response = await navigator.mediaDevices.getUserMedia({
+        audio: audioEnabled,
+        video: videoEnabled,
+      });
+      console.log("Got MediaStream:");
+
+      setLocalStream(response);
+      isLocalStreamReady.current = true;
+    } catch (error) {
+      console.error("Error accessing media devices.", error);
+    }
+  };
+
   // roomId가 바뀌거나, 새로고침될때는 모든 peerConnections를 닫고, leave한다.
   const handleBeforeUnload = () => {
     if (!roomId) return;
@@ -149,7 +170,11 @@ const useMediaChat = () => {
     console.log("Leaving room", roomId);
 
     if (socket.current) {
-      socket.current.emit(SOCKET_EVENTS.MEDIA_CHAT.LEAVE, roomId);
+      socket.current.emit(SOCKET_EVENTS.MEDIA_CHAT.LEAVE, {
+        roomId,
+        serverId,
+        userId: user?.id,
+      });
     }
 
     // Close all peer connections

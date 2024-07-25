@@ -60,7 +60,8 @@ const fetcher = async (
 };
 
 export const api = {
-  get: (url: string, params: any) => fetcher(url, "GET", params),
+  get: <T>(url: string, params: any) =>
+    fetcher(url, "GET", params) as Promise<T>,
   post: (url: string, body: any) => fetcher(url, "POST", null, body),
   patch: (url: string, body: any) => fetcher(url, "PATCH", null, body),
   delete: (url: string) => fetcher(url, "DELETE"),
