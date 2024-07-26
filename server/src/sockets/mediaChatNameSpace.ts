@@ -79,7 +79,7 @@ export const initializeMediaChatNamespace = (io: Server) => {
     });
 
     socket.on(SOCKET_EVENTS.MEDIA_CHAT.DISCONNECT, () => {
-      // console.log(`Client disconnected from media chat: ${socket.id}`);
+      console.log(`Client disconnected from media chat: ${socket.id}`);
     });
   });
 };

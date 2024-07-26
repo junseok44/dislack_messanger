@@ -27,7 +27,7 @@ export const SOCKET_EVENTS = {
     SDP_OFFER: "media_chat_sdp_offer" as const,
     SDP_ANSWER: "media_chat_sdp_answer" as const,
     ICE_CANDIDATE: "media_chat_ice_candidate" as const,
-    DISCONNECT: "media_chat_disconnect" as const,
+    DISCONNECT: "disconnect" as const,
     NEW_PEER: "media_chat_new_peer" as const,
     PEER_LEFT: "media_chat_peer_left" as const,
   },

@@ -91,8 +91,6 @@ const useMediaChat = () => {
       );
     }
 
-    console.log("Joining room", roomId, localStream);
-
     socket.current.emit(SOCKET_EVENTS.MEDIA_CHAT.JOIN, {
       roomId,
       serverId,
@@ -106,21 +104,20 @@ const useMediaChat = () => {
   useEffect(() => {
     window.addEventListener("beforeunload", handleBeforeUnload);
 
-    // 만약 roomId가 없다면, 소켓 연결을 완전히 끊는다.
-    // 그런데 문제는, 그저 단순히 unmount시에는, 이게 실행이 안될텐데, 그때는 roomid가 없다는것을 어떻게 판별할 것인지.
-    // 그렇지 않다면 socket연결이 끊기지가 않을것이다.
-
-    if (socket.current && !roomId) {
-      console.log("Disconnecting socket");
-      socket.current.disconnect();
-      socket.current = null;
-    }
-
     return () => {
       handleBeforeUnload();
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   }, [roomId]);
+
+  useEffect(() => {
+    return () => {
+      if (socket.current) {
+        socket.current.disconnect();
+        socket.current = null;
+      }
+    };
+  }, []);
 
   // 비디오, 오디오 트랙 활성화/비활성화
   useEffect(() => {
@@ -154,7 +151,6 @@ const useMediaChat = () => {
         audio: audioEnabled,
         video: videoEnabled,
       });
-      console.log("Got MediaStream:");
 
       setLocalStream(response);
       isLocalStreamReady.current = true;
@@ -166,8 +162,6 @@ const useMediaChat = () => {
   // roomId가 바뀌거나, 새로고침될때는 모든 peerConnections를 닫고, leave한다.
   const handleBeforeUnload = () => {
     if (!roomId) return;
-
-    console.log("Leaving room", roomId);
 
     if (socket.current) {
       socket.current.emit(SOCKET_EVENTS.MEDIA_CHAT.LEAVE, {
