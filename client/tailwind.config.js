@@ -4,6 +4,15 @@ module.exports = {
   content: ["./src/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
+      margin: {
+        sidebar_gutter: "8px",
+      },
+      padding: {
+        sidebar_gutter: "8px",
+      },
+      fontSize: {
+        content: "1.325rem",
+      },
       colors: {
         // 기본 색상 팔레트
         primary: {
@@ -15,8 +24,8 @@ module.exports = {
           dark: "#2A2D31",
         },
         tertiary: {
-          light: "#3B82F6",
-          dark: "#93C5FD",
+          light: "#232428",
+          dark: "#232428",
         },
 
         // 배경 색상 그룹
@@ -25,11 +34,15 @@ module.exports = {
             DEFAULT: "#FFFFFF",
             subtle: "#F3F4F6",
             muted: "#E5E7EB",
+            tertiary: "#232428",
           },
           dark: {
             DEFAULT: "#303338",
             subtle: "#374151",
             muted: "#4B5563",
+            media_sidebar: "#232428",
+            sidebar_normal: "#9CA3AF",
+            sidebar_active: "#F9FAFB",
           },
         },
 

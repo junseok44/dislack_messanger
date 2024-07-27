@@ -7,6 +7,8 @@ import { hasNewMessageOnChannel } from "@/utils/hasNewMessageOnChannel";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserServersWithChannels } from "@/hooks/server";
 import { Server } from "@/@types";
+import React from "react";
+import { LogOut, Mail, Plus, ShoppingCart } from "lucide-react";
 
 const SidebarButton = ({
   icon,
@@ -15,7 +17,7 @@ const SidebarButton = ({
   isNewMessage,
   serverId,
 }: {
-  icon: string;
+  icon?: React.ReactNode;
   text: string;
   onClick: () => void;
   serverId?: number;
@@ -38,7 +40,11 @@ const SidebarButton = ({
         }`}
         onClick={onClick}
       >
-        <p className="text-sm text-center text-nowrap">{text}</p>
+        {icon ? (
+          icon
+        ) : (
+          <p className="text-sm text-center text-nowrap">{text}</p>
+        )}
       </div>
     </div>
   );
@@ -67,7 +73,7 @@ const Sidebar = () => {
 
   const openInviteServerModal = () => {
     showModalWithoutControls({
-      title: "초대코드 입력",
+      title: "서버 들어가기",
       text: "",
       children: <InviteServerForm />,
     });
@@ -93,7 +99,6 @@ const Sidebar = () => {
         return (
           <SidebarButton
             key={server.id}
-            icon="home"
             text={server.name}
             isNewMessage={hasNewMessage}
             serverId={server.id}
@@ -103,24 +108,24 @@ const Sidebar = () => {
       })}
 
       <SidebarButton
-        icon="home"
+        icon={<Plus size={24} />}
         text="추가"
         onClick={openCreateServerModal}
       ></SidebarButton>
       <SidebarButton
-        icon="home"
+        icon={<Mail size={24} />}
         text="초대"
         onClick={openInviteServerModal}
       ></SidebarButton>
       <SidebarButton
-        icon="home"
+        icon={<ShoppingCart size={24} />}
         text="상품"
         onClick={() => {
           navigate(PAGE_ROUTE.PRODUCTS);
         }}
       ></SidebarButton>
       <SidebarButton
-        icon="home"
+        icon={<LogOut size={24} className="text-danger-light" />}
         text="로그아웃"
         onClick={() => logout()}
       ></SidebarButton>

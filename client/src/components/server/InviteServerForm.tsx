@@ -20,7 +20,7 @@ const InviteServerForm: React.FC = () => {
   return (
     <form onSubmit={handleSubmit}>
       <label className="block mb-2 text-text-light-default dark:text-text-dark-default">
-        Invite Code:
+        초대코드 입력:
         <input
           type="text"
           value={code}

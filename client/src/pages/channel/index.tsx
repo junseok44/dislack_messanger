@@ -125,7 +125,7 @@ const Channel = () => {
   );
 
   if (!allServers || !currentServer || !currentChannel || !channels) {
-    return <LoadingPage loadingText="Loading Server" />;
+    return <div>redirecting...</div>;
   }
 
   return (

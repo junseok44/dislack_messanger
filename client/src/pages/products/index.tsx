@@ -88,7 +88,7 @@ const ProductsPage = () => {
           <button
             className="py-2 px-4 rounded-lg font-semibold border-white border-2 mt-20"
             onClick={() => {
-              navigate(-1);
+              navigate("/");
             }}
           >
             돌아가기

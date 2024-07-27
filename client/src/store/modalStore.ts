@@ -23,11 +23,15 @@ export const useModalStore = create<ModalState>((set) => ({
   onRequestClose: undefined,
   children: null,
   showControls: true,
-  showModal: (options) =>
+  showModal: (options) => {
+    set({
+      children: null,
+    });
     set({
       isOpen: true,
       ...options,
-    }),
+    });
+  },
   closeModal: () => {
     return set({
       isOpen: false,

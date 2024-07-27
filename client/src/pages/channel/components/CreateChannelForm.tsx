@@ -38,9 +38,11 @@ const CreateChannelForm = ({ serverId }: { serverId: number }) => {
           className="mt-1 p-2 w-full border border-gray-300 rounded-md text-black"
         />
       </label>
-      <label className="mb-2 text-text-light-default dark:text-text-dark-default flex items-center">
-        채널의 타입 :{" "}
-        {channelType === ChannelType.TEXT ? "텍스트 채널" : "음성채팅"}
+      <label className="mb-2 text-text-light-default dark:text-text-dark-default flex items-center justify-between">
+        <span>
+          채널의 타입 :{" "}
+          {channelType === ChannelType.TEXT ? "텍스트 채널" : "음성채팅"}
+        </span>
         <Switch
           onChange={handleSwitchChange}
           checked={channelType === ChannelType.VOICE}

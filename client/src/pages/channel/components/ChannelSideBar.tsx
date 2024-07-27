@@ -1,207 +1,302 @@
-import { Channel, Server } from "@/@types";
-import useModal from "@/hooks/useModal";
-import { hasNewMessageOnChannel } from "@/utils/hasNewMessageOnChannel";
-import { memo } from "react";
-import { useParams } from "react-router-dom";
-import { useDeleteChannel } from "../hooks";
-import CreateChannelForm from "./CreateChannelForm";
-import useMediaChatStore from "@/store/mediaStore";
-import { ChannelType } from "@/@types/channel";
-import { useDeleteServer } from "@/hooks/server";
+import { Channel, Server } from '@/@types'
+import { ChannelType } from '@/@types/channel'
+import { Divider } from '@/components/ui/Divider'
+import Typography from '@/components/ui/Typography'
+import { useAuth } from '@/contexts/AuthContext'
+import useModal from '@/hooks/useModal'
+import useMediaChatStore from '@/store/mediaStore'
+import {
+    ChevronDown,
+    ChevronRight,
+    Mic,
+    MicOff,
+    PhoneOff,
+    Plus,
+    Settings,
+    Video,
+    VideoOff,
+    Wifi,
+} from 'lucide-react'
+import { memo, useState } from 'react'
+import { useParams } from 'react-router-dom'
+import { useDeleteChannel } from '../hooks'
+import s from '../styles/ChannelSideBar'
+import { ChannelItem } from './ChannelItem'
+import ChannelSettingForm from './ChannelSettingForm'
+import CreateChannelForm from './CreateChannelForm'
 
-const ChannelItem = ({
-  channel,
-  onClickChannel,
-  isOwner,
-  onClickDeleteChannel,
-  currentChannelId,
+const ChannelContainer = ({
+    channelType,
+    children,
+    isServerOwner,
+    onClickAddChannel,
 }: {
-  channel: Channel;
-  onClickChannel: (channelId: number, channelType: ChannelType) => void;
-  isOwner: boolean;
-  onClickDeleteChannel: (channelId: number) => void;
-  currentChannelId?: number;
+    channelType: string
+    children: React.ReactNode
+    isServerOwner: boolean
+    onClickAddChannel: () => void
 }) => {
-  // if (channel.type === ChannelType.VOICE)
-  // console.log(channel.channelParticipants);
+    const [isExpanded, setIsExpanded] = useState(true)
 
-  const getCurrentChannelStyle = (channelId: number) => {
-    return channelId === currentChannelId
-      ? "text-secondary-light"
-      : "text-white";
-  };
-
-  return (
-    <div className="flex flex-col">
-      <div
-        className={`h-12 flex items-center cursor-pointer justify-between ${
-          channel.id === 1 ? "text-secondary-light" : "text-white"
-        }`}
-        onClick={() => onClickChannel(channel.id, channel.type)}
-      >
-        <div className="flex items-center gap-4">
-          {hasNewMessageOnChannel(
-            channel.lastMessageId,
-            channel.lastSeenMessageId
-          ) && <div className="w-2 h-2 bg-green-500 rounded-full" />}
-          <span className={`${getCurrentChannelStyle(channel.id)}`}>
-            {channel.name}
-          </span>
+    return (
+        <div className="mt-2 gap-1 text-xs text-text-light-muted">
+            <div className="mb-1 flex items-center justify-between">
+                <div
+                    className="flex flex-grow cursor-pointer items-center gap-1 hover:text-text-dark"
+                    onClick={() => setIsExpanded(!isExpanded)}
+                >
+                    {isExpanded ? (
+                        <ChevronDown size={12} />
+                    ) : (
+                        <ChevronRight size={12} />
+                    )}
+                    {channelType} 채널
+                </div>
+                {isServerOwner && (
+                    <Plus
+                        size={12}
+                        onClick={onClickAddChannel}
+                        className="cursor-pointer hover:text-text-dark"
+                    />
+                )}
+            </div>
+            {<div>{isExpanded && children}</div>}
         </div>
-        {isOwner && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onClickDeleteChannel(channel.id);
-            }}
-          >
-            채널 삭제
-          </button>
-        )}
-      </div>
-      <div className="ml-4 flex flex-col">
-        {channel.type === ChannelType.VOICE &&
-          channel.channelParticipants.map((participant) => {
-            return (
-              <span key={participant.id} className="text-xs text-gray-400">
-                {participant.username}
-              </span>
-            );
-          })}
-      </div>
-    </div>
-  );
-};
+    )
+}
 
 const ChannelSideBar = ({
-  channels,
-  server,
-  onClickChannels,
-  userId,
+    channels,
+    server,
+    onClickChannels,
+    userId,
 }: {
-  channels: Channel[];
-  server: Pick<Server, "id" | "name" | "inviteCode" | "ownerId">;
-  onClickChannels: (channelId: number, channelType: ChannelType) => void;
-  userId?: number;
+    channels: Channel[]
+    server: Pick<Server, 'id' | 'name' | 'inviteCode' | 'ownerId'>
+    onClickChannels: (channelId: number, channelType: ChannelType) => void
+    userId?: number
 }) => {
-  const { mutate: deleteServer } = useDeleteServer();
-  const { mutate: deleteChannel } = useDeleteChannel();
+    const { mutate: deleteChannel } = useDeleteChannel()
 
-  const { showModalWithControls, showModalWithoutControls, closeModal } =
-    useModal();
+    const { showModalWithControls, showModalWithoutControls, closeModal } =
+        useModal()
 
-  const { channelId } = useParams<{
-    channelId: string;
-  }>();
+    const { user } = useAuth()
 
-  const parsedChannelId = channelId ? parseInt(channelId) : undefined;
+    const { channelId } = useParams<{
+        channelId: string
+    }>()
 
-  const {
-    mediaRoomId,
-    disconnect,
-    videoEnabled,
-    toggleVideo,
-    audioEnabled,
-    toggleAudio,
-  } = useMediaChatStore();
+    const parsedChannelId = channelId ? parseInt(channelId) : undefined
 
-  const onClickDeleteServer = (id: number) => {
-    showModalWithControls({
-      title: "서버 삭제",
-      text: "정말로 서버를 삭제하시겠습니까?\n삭제된 서버는 복구할 수 없습니다.",
-      onConfirm: () => {
-        deleteServer(id);
-        closeModal();
-      },
-    });
-  };
+    const {
+        mediaRoomId,
+        disconnect,
+        videoEnabled,
+        toggleVideo,
+        audioEnabled,
+        toggleAudio,
+    } = useMediaChatStore()
 
-  const onClickAddChannel = () => {
-    showModalWithoutControls({
-      title: "채널 생성",
-      children: <CreateChannelForm serverId={server.id} />,
-    });
-  };
+    const onClickShowSettings = () => {
+        showModalWithoutControls({
+            title: '서버 설정',
+            children: (
+                <ChannelSettingForm
+                    ownerId={server.ownerId}
+                    serverId={server.id}
+                    inviteCode={server.inviteCode}
+                />
+            ),
+        })
+    }
 
-  const handleDeleteChannel = (channelId: number) => {
-    showModalWithControls({
-      title: "채널 삭제",
-      text: "정말로 채널을 삭제하시겠습니까?\n삭제된 채널은 복구할 수 없습니다.",
-      onConfirm: () => {
-        deleteChannel(channelId);
-        closeModal();
-      },
-      onRequestClose: () => {
-        closeModal();
-      },
-    });
-  };
+    const onClickAddChannel = () => {
+        showModalWithoutControls({
+            title: '채널 생성',
+            children: <CreateChannelForm serverId={server.id} />,
+        })
+    }
 
-  return (
-    <div className="w-60 bg-secondary-dark h-full flex-shrink-0 flex flex-col">
-      <div className="mb-4">
-        <div className="text-2xl ">{server.name}</div>
-        <div>{server.inviteCode}</div>
-      </div>
-      {server.ownerId === userId && (
-        <div className="flex justify-between mb-4">
-          <button
-            onClick={() => {
-              onClickDeleteServer(server.id);
-            }}
-          >
-            서버 삭제
-          </button>
-          <button onClick={onClickAddChannel}>채널 추가</button>
+    const handleDeleteChannel = (channelId: number) => {
+        showModalWithControls({
+            title: '채널 삭제',
+            text: '정말로 채널을 삭제하시겠습니까?\n삭제된 채널은 복구할 수 없습니다.',
+            onConfirm: () => {
+                deleteChannel(channelId)
+                closeModal()
+            },
+            onRequestClose: () => {
+                closeModal()
+            },
+        })
+    }
+
+    return (
+        <div className="flex h-full w-60 flex-shrink-0 flex-col overflow-auto bg-secondary-dark">
+            <div className="border-bottom-[1px] h-12 border-b-2 border-primary-dark px-4 py-3">
+                <header className="flex h-6 items-center">
+                    <h2 className="mr-4 overflow-hidden text-ellipsis text-nowrap leading-4">
+                        {server.name}
+                    </h2>
+                </header>
+            </div>
+            <div className="mr-sidebar_gutter">
+                <div className="h-3"></div>
+                <div
+                    className={`ml-sidebar_gutter flex items-center gap-1 p-2 text-base ${s.ButtonWithHover}`}
+                    onClick={onClickShowSettings}
+                >
+                    <Settings size={16} />
+                    <div className={`${s.TextWithMargin}`}>설정</div>
+                </div>
+                <div className="ml-sidebar_gutter mt-2 h-[0.5px] bg-text-light-muted"></div>
+            </div>
+            <div className="h-3"></div>
+            <div className="mr-sidebar_gutter flex-grow overflow-auto pb-4">
+                <ChannelContainer
+                    channelType="채팅"
+                    onClickAddChannel={onClickAddChannel}
+                    isServerOwner={server.ownerId === userId}
+                >
+                    {channels
+                        .filter((channel) => {
+                            return channel.type === ChannelType.TEXT
+                        })
+                        .map((channel) => {
+                            return (
+                                <ChannelItem
+                                    key={channel.id}
+                                    channel={channel}
+                                    onClickChannel={onClickChannels}
+                                    isOwner={server.ownerId === userId}
+                                    onClickDeleteChannel={handleDeleteChannel}
+                                    currentChannelId={parsedChannelId}
+                                />
+                            )
+                        })}
+                </ChannelContainer>
+                <ChannelContainer
+                    channelType="음성"
+                    onClickAddChannel={onClickAddChannel}
+                    isServerOwner={server.ownerId === userId}
+                >
+                    {channels
+                        .filter((channel) => {
+                            return channel.type === ChannelType.VOICE
+                        })
+                        .map((channel) => {
+                            return (
+                                <ChannelItem
+                                    key={channel.id}
+                                    channel={channel}
+                                    onClickChannel={onClickChannels}
+                                    isOwner={server.ownerId === userId}
+                                    onClickDeleteChannel={handleDeleteChannel}
+                                    currentChannelId={parsedChannelId}
+                                />
+                            )
+                        })}
+                </ChannelContainer>
+            </div>
+            <div className="bg-black">
+                {mediaRoomId && (
+                    <>
+                        <div className="flex items-center justify-between p-2 py-3">
+                            <div className="flex flex-col gap-1 font-medium leading-4">
+                                <div className="flex items-center text-secondary-light">
+                                    <Wifi size={16} className="mr-1" />
+                                    <Typography size="medium" weight="semibold">
+                                        연결됨
+                                    </Typography>
+                                </div>
+                                <Typography size="small">
+                                    {mediaRoomId}번 방
+                                </Typography>
+                            </div>
+                            <PhoneOff
+                                size={24}
+                                onClick={() => {
+                                    disconnect()
+                                }}
+                                className={`${s.ButtonWithHover}`}
+                            />
+                        </div>
+                        <Divider />
+                    </>
+                )}
+                <div className="flex w-full items-center p-2 py-2.5">
+                    <div className="h-8 w-8 flex-shrink-0 rounded-full bg-secondary-dark"></div>
+                    <div className="mx-2 flex flex-grow flex-col justify-center gap-0.5 overflow-hidden text-ellipsis text-nowrap">
+                        <Typography size="small" weight="semibold">
+                            {user?.username}
+                        </Typography>
+                        <Typography size="small" weight="normal">
+                            온라인
+                        </Typography>
+                    </div>
+                    <div className="flex gap-2">
+                        {videoEnabled ? (
+                            <Video
+                                size={24}
+                                onClick={() => {
+                                    toggleVideo()
+                                }}
+                                className={`${s.ButtonWithHover}`}
+                            />
+                        ) : (
+                            <VideoOff
+                                size={24}
+                                onClick={() => {
+                                    toggleVideo()
+                                }}
+                                className={`${s.ButtonWithHover}`}
+                            />
+                        )}
+                        {audioEnabled ? (
+                            <Mic
+                                size={24}
+                                onClick={() => {
+                                    toggleAudio()
+                                }}
+                                className={`${s.ButtonWithHover}`}
+                            />
+                        ) : (
+                            <MicOff
+                                size={24}
+                                onClick={() => {
+                                    toggleAudio()
+                                }}
+                                className={`${s.ButtonWithHover}`}
+                            />
+                        )}
+                        <Settings
+                            size={24}
+                            className={`cursor-pointer ${s.ButtonWithHover}`}
+                        />
+                    </div>
+                </div>
+            </div>
         </div>
-      )}
-      <div className="flex-grow">
-        {channels.map((channel) => {
-          return (
-            <ChannelItem
-              key={channel.id}
-              channel={channel}
-              onClickChannel={onClickChannels}
-              isOwner={server.ownerId === userId}
-              onClickDeleteChannel={handleDeleteChannel}
-              currentChannelId={parsedChannelId}
-            />
-          );
-        })}
-      </div>
-      <div className="bg-blue-500">
-        {mediaRoomId && (
-          <div className="bg-green-400 min-h-12">
-            연결됨
-            {mediaRoomId}번 방
-            <button
-              onClick={() => {
-                toggleVideo();
-              }}
-            >
-              {videoEnabled ? "비디오 끄기" : "비디오 켜기"}
-            </button>
-            <button
-              onClick={() => {
-                toggleAudio();
-              }}
-            >
-              {audioEnabled ? "오디오 끄기" : "오디오 켜기"}
-            </button>
-            <button
-              onClick={() => {
-                disconnect();
-              }}
-            >
-              연결끊기
-            </button>
-          </div>
-        )}
+    )
+}
 
-        <div className="min-h-12"></div>
-      </div>
-    </div>
-  );
-};
+export default memo(ChannelSideBar)
 
-export default memo(ChannelSideBar);
+// {hasNewMessageOnChannel(
+// channel.lastMessageId,
+// channel.lastSeenMessageId
+// ) && <div className="w-2 h-2 bg-green-500 rounded-full" />}
+
+// {server.ownerId === userId && (
+//   <div className="flex justify-between mb-4">
+//     <button
+//       onClick={() => {
+//         onClickDeleteServer(server.id);
+//       }}
+//     >
+//       서버 삭제
+//     </button>
+//     <button onClick={onClickAddChannel}>채널 추가</button>
+//   </div>
+// )}

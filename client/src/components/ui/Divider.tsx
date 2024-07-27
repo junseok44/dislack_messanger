@@ -1,11 +1,8 @@
-import React from "react";
-
-const Divider = ({
-  width = "w-full", // 기본값으로 100%
-  height = "h-1", // 기본값으로 1 (기본값을 원하는 크기로 변경 가능)
-  bgColor = "bg-secondary-dark", // 기본값으로 bg-secondary-dark
+export const Divider = ({
+  className,
+}: {
+  className?: string;
+  style?: React.CSSProperties;
 }) => {
-  return <div className={`${width} ${height} ${bgColor}`}></div>;
+  return <div className={`h-[0.5px] bg-text-light-muted ${className}`}></div>;
 };
-
-export default Divider;
