@@ -1,0 +1,1 @@
+export const CHANNEL_MESSAGE_LIMIT = 20

@@ -1,19 +1,19 @@
-import { ChannelType, getAllMessagesResponse } from "@/@types";
-import { CHANNEL_MESSAGE_LIMIT } from "@/constants";
-import { API_ROUTE } from "@/constants/routeName";
-import { api } from "@/lib/api";
+import { ChannelType, getAllMessagesResponse } from '@/@types'
+import { CHANNEL_MESSAGE_LIMIT } from '@/constants/channel'
+import { API_ROUTE } from '@/constants/routeName'
+import { api } from '@/lib/api'
 
 export const createChannel = async (
   name: string,
   serverId: number,
   type: ChannelType
 ) => {
-  await api.post(API_ROUTE.CHANNEL.CREATE, { name, serverId, type });
-};
+  await api.post(API_ROUTE.CHANNEL.CREATE, { name, serverId, type })
+}
 
 export const deleteChannel = async (id: number) => {
-  await api.delete(API_ROUTE.CHANNEL.DELETE(id));
-};
+  await api.delete(API_ROUTE.CHANNEL.DELETE(id))
+}
 
 export const fetchMessages = async (
   channelId: number,
@@ -21,8 +21,8 @@ export const fetchMessages = async (
 ) => {
   return api.get<getAllMessagesResponse>(API_ROUTE.MESSAGES.GET(channelId), {
     params: { cursor, limit: CHANNEL_MESSAGE_LIMIT },
-  });
-};
+  })
+}
 
 export const sendMessage = async ({
   channelId,
@@ -30,21 +30,21 @@ export const sendMessage = async ({
   tempId,
   serverId,
 }: {
-  channelId: number;
-  serverId: number;
-  content: string;
-  tempId: number;
+  channelId: number
+  serverId: number
+  content: string
+  tempId: number
 }) => {
   return api.post(API_ROUTE.MESSAGES.POST(channelId), {
     content,
     serverId,
     tempId,
-  });
-};
+  })
+}
 
 export const updateLastSeenMessage = async (channelId: number | string) => {
   return await api.patch(
     API_ROUTE.MESSAGES.UPDATE_LAST_SEEN_MESSAGE(channelId),
     {}
-  );
-};
+  )
+}

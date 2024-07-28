@@ -1,4 +1,4 @@
-version: "3.8"
+version: '3.8'
 
 services:
   db:
@@ -8,7 +8,7 @@ services:
       MYSQL_ROOT_PASSWORD: qwer1234!
       MYSQL_DATABASE: practice
     ports:
-      - "3306:3306"
+      - '3306:3306'
 
   api_server:
     build:
@@ -20,8 +20,8 @@ services:
     volumes:
       - ./server/src:/app/src
     ports:
-      - "8001:8001"
-      - "5555:5555"
+      - '8001:8001'
+      - '5555:5555'
     environment:
       - SERVER_PORT=8001
 
@@ -33,9 +33,9 @@ services:
     depends_on:
       - api_server
     ports:
-      - "3000:3000"
+      - '3000:3000'
     volumes:
-      - ./client/src:/app/src
+      - ./client:/app
     environment:
       - REACT_APP_API_URL=http://localhost:8001
       - REACT_APP_PUBLISHABLE_STRIPE_KEY=pk_test_51PdmCGRv8HKFmcvf8XjWAZ1LMzF7dKL01Gq6I39FGTT5tb73kgKIiOxC1vqfYMKT74XxgverDOsLYYhwcApkioEP00PNeSRKCA
