@@ -1,17 +1,18 @@
-import { Request, Response } from "express";
-import prisma from "../config/db";
-import { ERROR_CODES } from "../constants/errorCode";
-import { SOCKET_EVENTS, SOCKET_NAMESPACES } from "../constants/socket";
-import { getNamespace } from "../sockets";
-import { formatErrorResponse } from "../utils/formatResponse";
-import { getUserWithPlan } from "../lib/getUserPlan";
+import { Request, Response } from 'express'
+import prisma from '../config/db'
+import { ERROR_CODES } from '../constants/errorCode'
+import { SOCKET_EVENTS, SOCKET_NAMESPACES } from '../constants/socket'
+import { getNamespace } from '../sockets'
+import { formatErrorResponse } from '../utils/formatResponse'
+import { getUserWithPlan } from '../lib/getUserPlan'
+import { getUsersInRoom } from '../lib/redis'
 
 export const createServer = async (req: Request, res: Response) => {
-  const { name } = req.body;
-  const userId = req.user.id;
+  const { name } = req.body
+  const userId = req.user.id
 
   try {
-    const { user, product } = await getUserWithPlan(userId);
+    const { user, product } = await getUserWithPlan(userId)
 
     if (user.ownedServers.length >= product.servers) {
       return res
@@ -19,9 +20,9 @@ export const createServer = async (req: Request, res: Response) => {
         .json(
           formatErrorResponse(
             ERROR_CODES.EXCEEDED_SERVER_CREATE_LIMIT,
-            "Server limit exceeded"
+            'Server limit exceeded'
           )
-        );
+        )
     }
 
     const server = await prisma.server.create({
@@ -30,7 +31,7 @@ export const createServer = async (req: Request, res: Response) => {
         ownerId: userId,
         channels: {
           create: {
-            name: "일반",
+            name: '일반',
             ownerId: userId,
             protected: true,
           },
@@ -39,64 +40,64 @@ export const createServer = async (req: Request, res: Response) => {
       include: {
         channels: true,
       },
-    });
-    res.status(201).json(server);
+    })
+    res.status(201).json(server)
   } catch (error) {
-    console.log(error);
+    console.log(error)
 
     res.status(500).json({
       errorCode: ERROR_CODES.INTERNAL_SERVER_ERROR,
-      message: "Internal Server Error",
-    });
+      message: 'Internal Server Error',
+    })
   }
-};
+}
 
 export const deleteServer = async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const userId = req.user.id;
+  const { id } = req.params
+  const userId = req.user.id
 
   try {
     const server = await prisma.server.findUnique({
       where: { id: parseInt(id) },
-    });
+    })
 
     if (!server) {
       return res.status(404).json({
         errorCode: ERROR_CODES.SERVER_NOT_FOUND,
-        message: "Server not found",
-      });
+        message: 'Server not found',
+      })
     }
 
     if (server.ownerId !== userId) {
       return res.status(403).json({
         errorCode: ERROR_CODES.FORBIDDEN,
-        message: "Invalid access token",
-      });
+        message: 'Invalid access token',
+      })
     }
 
     await prisma.server.delete({
       where: { id: parseInt(id) },
-    });
+    })
 
-    const serverNameSpace = getNamespace(SOCKET_NAMESPACES.SERVER);
+    const serverNameSpace = getNamespace(SOCKET_NAMESPACES.SERVER)
     serverNameSpace.emit(SOCKET_EVENTS.SERVER.DELETE_SERVER, {
       serverId: parseInt(id),
-    });
+    })
 
-    res.status(204).send();
+    res.status(204).send()
   } catch (error) {
-    console.log(error);
+    console.log(error)
 
     res.status(500).json({
       errorCode: ERROR_CODES.INTERNAL_SERVER_ERROR,
-      message: "Internal Server Error",
-    });
+      message: 'Internal Server Error',
+    })
   }
-};
+}
 
 export const joinServer = async (req: Request, res: Response) => {
-  const { inviteCode } = req.body;
-  const { id: userId } = req.user;
+  const { inviteCode } = req.body
+  const { id: userId } = req.user
 
   try {
     const server = await prisma.server.findUnique({
@@ -104,26 +105,26 @@ export const joinServer = async (req: Request, res: Response) => {
       include: {
         members: true,
       },
-    });
+    })
 
     if (!server) {
       return res.status(404).json({
-        message: "Server not found",
+        message: 'Server not found',
         errorCode: ERROR_CODES.SERVER_NOT_FOUND,
-      });
+      })
     }
 
     const isMember =
       server.members.some((member) => member.id === userId) ||
-      server.ownerId === userId;
+      server.ownerId === userId
 
-    console.log("isMember", isMember);
+    console.log('isMember', isMember)
 
     if (isMember) {
       return res.status(400).json({
-        message: "User is already a member of this server",
+        message: 'User is already a member of this server',
         errorCode: ERROR_CODES.USER_ALREADY_MEMBER,
-      });
+      })
     }
 
     const newServer = await prisma.server.update({
@@ -136,23 +137,23 @@ export const joinServer = async (req: Request, res: Response) => {
       include: {
         channels: true,
       },
-    });
+    })
 
-    res.json(newServer);
+    res.json(newServer)
   } catch (error) {
-    console.error("Failed to join server:", error);
+    console.error('Failed to join server:', error)
     res.status(500).json({
-      message: "Failed to join server",
+      message: 'Failed to join server',
       errorCode: ERROR_CODES.INTERNAL_SERVER_ERROR,
-    });
+    })
   }
-};
+}
 
 export const getUserServersWithChannels = async (
   req: Request,
   res: Response
 ) => {
-  const userId = req.user.id;
+  const userId = req.user.id
 
   try {
     const servers = await prisma.server.findMany({
@@ -169,27 +170,38 @@ export const getUserServersWithChannels = async (
           },
         },
       },
-    });
+    })
 
-    const serversWithLastSeenMessage = servers.map((server) => ({
-      ...server,
-      channels: server.channels.map((channel) => {
-        const lastSeenMessage = channel.lastSeenMessages[0];
-        const { lastSeenMessages, ...channelWithoutLastSeenMessages } = channel;
-        return {
-          ...channelWithoutLastSeenMessages,
-          lastSeenMessageId: lastSeenMessage ? lastSeenMessage.messageId : null,
-        };
-      }),
-    }));
+    const serversWithAdditionalData = await Promise.all(
+      servers.map(async (server) => ({
+        ...server,
+        channels: await Promise.all(
+          server.channels.map(async (channel) => {
+            const lastSeenMessage = channel.lastSeenMessages[0]
+            const { lastSeenMessages, ...channelWithoutLastSeenMessages } =
+              channel
 
-    res.status(200).json(serversWithLastSeenMessage);
+            const channelParticipants = await getUsersInRoom(channel.id)
+
+            return {
+              ...channelWithoutLastSeenMessages,
+              channelParticipants,
+              lastSeenMessageId: lastSeenMessage
+                ? lastSeenMessage.messageId
+                : null,
+            }
+          })
+        ),
+      }))
+    )
+
+    res.status(200).json(serversWithAdditionalData)
   } catch (error) {
-    console.log(error);
+    console.log(error)
 
     res.status(500).json({
       errorCode: ERROR_CODES.INTERNAL_SERVER_ERROR,
-      message: "Internal Server Error",
-    });
+      message: 'Internal Server Error',
+    })
   }
-};
+}

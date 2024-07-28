@@ -1,44 +1,35 @@
-import { Channel } from "@/@types";
-import { ChannelType } from "@/@types/channel";
-import { hasNewMessageOnChannel } from "@/utils/hasNewMessageOnChannel";
-import { Hash, Headphones, Trash2 } from "lucide-react";
-import s from "../styles/ChannelSideBar";
-import Typography from "@/components/ui/Typography";
+import { Channel } from '@/@types'
+import { ChannelType } from '@/@types/channel'
+import { hasNewMessageOnChannel } from '@/utils/hasNewMessageOnChannel'
+import { Hash, Headphones, Trash2 } from 'lucide-react'
+import s from '../styles/ChannelSideBar'
+import Typography from '@/components/ui/Typography'
 
 export const ChannelItem = ({
   channel,
   onClickChannel,
   isOwner,
   onClickDeleteChannel,
-  currentChannelId,
 }: {
-  channel: Channel;
-  onClickChannel: (channelId: number, channelType: ChannelType) => void;
-  isOwner: boolean;
-  onClickDeleteChannel: (channelId: number) => void;
-  currentChannelId?: number;
+  channel: Channel
+  onClickChannel: (channelId: number, channelType: ChannelType) => void
+  isOwner: boolean
+  onClickDeleteChannel: (channelId: number) => void
 }) => {
-  const getCurrentChannelStyle = (channelId: number) => {
-    return channelId === currentChannelId
-      ? "text-white"
-      : "text-text-light-muted";
-  };
-
   return (
     <div className="flex flex-col">
       <div
-        className={`flex items-center cursor-pointer hover:bg-background-dark-muted rounded-md ml-sidebar_gutter relative
-          `}
+        className={`relative ml-sidebar_gutter flex cursor-pointer items-center rounded-md hover:bg-background-dark-muted`}
         onClick={() => onClickChannel(channel.id, channel.type)}
       >
         {hasNewMessageOnChannel(
           channel.lastMessageId,
           channel.lastSeenMessageId
         ) && (
-          <div className="absolute left-[-3px] w-1.5 h-1.5 bg-background-light rounded-full"></div>
+          <div className="absolute left-[-3px] h-1.5 w-1.5 rounded-full bg-background-light"></div>
         )}
 
-        <div className="flex flex-grow items-center justify-between gap-1 text-text-dark-subtle px-[8px] py-[6px]">
+        <div className="flex flex-grow items-center justify-between gap-1 px-[8px] py-[6px] text-text-dark-subtle">
           <div className="flex items-center gap-1">
             {channel.type === ChannelType.VOICE ? (
               <Headphones size={16} />
@@ -52,8 +43,8 @@ export const ChannelItem = ({
             <Trash2
               size={16}
               onClick={(e) => {
-                e.stopPropagation();
-                onClickDeleteChannel(channel.id);
+                e.stopPropagation()
+                onClickDeleteChannel(channel.id)
               }}
               className="cursor-pointer hover:text-text-dark"
             />
@@ -67,9 +58,9 @@ export const ChannelItem = ({
               <span key={participant.id} className="text-xs text-text-dark">
                 {participant.username}
               </span>
-            );
+            )
           })}
       </div>
     </div>
-  );
-};
+  )
+}

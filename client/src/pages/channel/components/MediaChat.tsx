@@ -1,6 +1,6 @@
-import useMediaChatStore from "@/store/mediaStore";
-import React, { useEffect, useRef } from "react";
-import { RemoteStream } from "../hooks/useMediaChat";
+import useMediaChatStore from '@/store/mediaStore'
+import React, { useEffect, useRef } from 'react'
+import { RemoteStream } from '../hooks/useMediaChat'
 
 const RemoteVideos = React.memo(
   ({ remoteStreams }: { remoteStreams: RemoteStream[] }) => {
@@ -11,36 +11,34 @@ const RemoteVideos = React.memo(
             key={remoteStream.id}
             ref={(video) => {
               if (video) {
-                video.srcObject = remoteStream.stream;
+                video.srcObject = remoteStream.stream
                 video.onloadeddata = () => {
                   video.play().catch((error) => {
-                    console.error("Error playing remote video:", error);
-                  });
-                };
+                    console.error('Error playing remote video:', error)
+                  })
+                }
               }
             }}
             autoPlay
-            style={{ width: "300px" }}
+            style={{ width: '300px' }}
           ></video>
         ))}
       </div>
-    );
+    )
   }
-);
+)
 
 const LocalVideo = ({ localStream }: { localStream: MediaStream | null }) => {
-  const localVideoRef = useRef<HTMLVideoElement | null>(null);
+  const localVideoRef = useRef<HTMLVideoElement | null>(null)
 
   useEffect(() => {
     if (localStream && localVideoRef.current) {
-      localVideoRef.current.srcObject = localStream;
+      localVideoRef.current.srcObject = localStream
     }
-  }, [localStream]);
+  }, [localStream])
 
-  return (
-    <video ref={localVideoRef} autoPlay muted style={{ width: "300px" }} />
-  );
-};
+  return <video ref={localVideoRef} autoPlay muted style={{ width: '300px' }} />
+}
 
 const VideoContainer = ({
   localStream,
@@ -52,36 +50,30 @@ const VideoContainer = ({
   audioEnabled,
   videoEnabled,
 }: {
-  localStream: MediaStream | null;
-  remoteStreams: RemoteStream[];
-  currentChannelId: number;
-  setGlobalMode: (mode: boolean) => void;
-  toggleVideo: () => void;
-  toggleAudio: () => void;
-  audioEnabled: boolean;
-  videoEnabled: boolean;
+  localStream: MediaStream | null
+  remoteStreams: RemoteStream[]
+  currentChannelId: number
+  setGlobalMode: (mode: boolean) => void
+  toggleVideo: () => void
+  toggleAudio: () => void
+  audioEnabled: boolean
+  videoEnabled: boolean
 }) => {
   useEffect(() => {
-    setGlobalMode(false);
+    setGlobalMode(false)
 
     return () => {
-      setGlobalMode(true);
-    };
-  }, [currentChannelId]);
+      setGlobalMode(true)
+    }
+  }, [currentChannelId])
 
   return (
     <div>
       <LocalVideo localStream={localStream} />
       <RemoteVideos remoteStreams={remoteStreams} />
-      <button onClick={toggleVideo}>
-        {videoEnabled ? "Turn off Video" : "Turn on Video"}
-      </button>
-      <button onClick={toggleAudio}>
-        {audioEnabled ? "Turn off Audio" : "Turn on Audio"}
-      </button>
     </div>
-  );
-};
+  )
+}
 
 const MediaChat = ({ currentChannelId }: { currentChannelId: number }) => {
   const {
@@ -94,7 +86,7 @@ const MediaChat = ({ currentChannelId }: { currentChannelId: number }) => {
     videoEnabled,
     mediaRoomId,
     setMediaRoomId,
-  } = useMediaChatStore();
+  } = useMediaChatStore()
 
   return (
     <div>
@@ -115,7 +107,7 @@ const MediaChat = ({ currentChannelId }: { currentChannelId: number }) => {
             Join the channel to start video chat
             <button
               onClick={() => {
-                setMediaRoomId(currentChannelId);
+                setMediaRoomId(currentChannelId)
               }}
             >
               Join
@@ -124,7 +116,7 @@ const MediaChat = ({ currentChannelId }: { currentChannelId: number }) => {
         </>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default MediaChat;
+export default MediaChat

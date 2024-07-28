@@ -18,7 +18,7 @@ import {
   VideoOff,
   Wifi,
 } from 'lucide-react'
-import { memo, useState } from 'react'
+import { memo, useCallback, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useDeleteChannel } from '../hooks'
 import s from '../styles/ChannelSideBar'
@@ -84,8 +84,6 @@ const ChannelSideBar = ({
     channelId: string
   }>()
 
-  const parsedChannelId = channelId ? parseInt(channelId) : undefined
-
   const {
     mediaRoomId,
     disconnect,
@@ -115,19 +113,44 @@ const ChannelSideBar = ({
     })
   }
 
-  const handleDeleteChannel = (channelId: number) => {
-    showModalWithControls({
-      title: '채널 삭제',
-      text: '정말로 채널을 삭제하시겠습니까?\n삭제된 채널은 복구할 수 없습니다.',
-      onConfirm: () => {
-        deleteChannel(channelId)
-        closeModal()
-      },
-      onRequestClose: () => {
-        closeModal()
-      },
-    })
-  }
+  // const handleDeleteChannel = (channelId: number) => {
+  //   showModalWithControls({
+  //     title: '채널 삭제',
+  //     text: '정말로 채널을 삭제하시겠습니까?\n삭제된 채널은 복구할 수 없습니다.',
+  //     onConfirm: () => {
+  //       deleteChannel(channelId)
+  //       closeModal()
+  //     },
+  //     onRequestClose: () => {
+  //       closeModal()
+  //     },
+  //   })
+  // }
+
+  const handleDeleteChannel = useCallback(
+    (channelId: number) => {
+      showModalWithControls({
+        title: '채널 삭제',
+        text: '정말로 채널을 삭제하시겠습니까?\n삭제된 채널은 복구할 수 없습니다.',
+        onConfirm: () => {
+          deleteChannel(channelId)
+          closeModal()
+        },
+        onRequestClose: () => {
+          closeModal()
+        },
+      })
+    },
+    [deleteChannel, closeModal]
+  )
+
+  useEffect(() => {
+    console.log('onCLickChannels triggered')
+  }, [onClickChannels])
+
+  useEffect(() => {
+    console.log('onClickDeleteChannel triggered')
+  }, [handleDeleteChannel])
 
   return (
     <div className="flex h-full w-60 flex-shrink-0 flex-col overflow-auto bg-secondary-dark">
@@ -168,7 +191,6 @@ const ChannelSideBar = ({
                   onClickChannel={onClickChannels}
                   isOwner={server.ownerId === userId}
                   onClickDeleteChannel={handleDeleteChannel}
-                  currentChannelId={parsedChannelId}
                 />
               )
             })}
@@ -190,7 +212,6 @@ const ChannelSideBar = ({
                   onClickChannel={onClickChannels}
                   isOwner={server.ownerId === userId}
                   onClickDeleteChannel={handleDeleteChannel}
-                  currentChannelId={parsedChannelId}
                 />
               )
             })}
