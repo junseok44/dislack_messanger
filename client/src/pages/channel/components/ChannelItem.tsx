@@ -10,16 +10,18 @@ export const ChannelItem = ({
   onClickChannel,
   isOwner,
   onClickDeleteChannel,
+  isCurrentChannel,
 }: {
   channel: Channel
   onClickChannel: (channelId: number, channelType: ChannelType) => void
   isOwner: boolean
   onClickDeleteChannel: (channelId: number) => void
+  isCurrentChannel: boolean
 }) => {
   return (
     <div className="flex flex-col">
       <div
-        className={`relative ml-sidebar_gutter flex cursor-pointer items-center rounded-md hover:bg-background-dark-muted`}
+        className={`relative ml-sidebar_gutter flex cursor-pointer items-center rounded-md hover:bg-background-dark-subtle ${isCurrentChannel ? 'bg-background-dark-muted' : null} `}
         onClick={() => onClickChannel(channel.id, channel.type)}
       >
         {hasNewMessageOnChannel(
@@ -37,7 +39,9 @@ export const ChannelItem = ({
               <Hash size={16} />
             )}
 
-            <Typography>{channel.name}</Typography>
+            <Typography size="medium" weight="normal">
+              {channel.name}
+            </Typography>
           </div>
           {isOwner && (
             <Trash2

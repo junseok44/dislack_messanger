@@ -26,7 +26,7 @@ import { ChannelItem } from './ChannelItem'
 import ChannelSettingForm from './ChannelSettingForm'
 import CreateChannelForm from './CreateChannelForm'
 
-const ChannelContainer = ({
+const ChannelItemContainer = ({
   channelType,
   children,
   isServerOwner,
@@ -113,20 +113,6 @@ const ChannelSideBar = ({
     })
   }
 
-  // const handleDeleteChannel = (channelId: number) => {
-  //   showModalWithControls({
-  //     title: '채널 삭제',
-  //     text: '정말로 채널을 삭제하시겠습니까?\n삭제된 채널은 복구할 수 없습니다.',
-  //     onConfirm: () => {
-  //       deleteChannel(channelId)
-  //       closeModal()
-  //     },
-  //     onRequestClose: () => {
-  //       closeModal()
-  //     },
-  //   })
-  // }
-
   const handleDeleteChannel = useCallback(
     (channelId: number) => {
       showModalWithControls({
@@ -174,7 +160,7 @@ const ChannelSideBar = ({
       </div>
       <div className="h-3"></div>
       <div className="mr-sidebar_gutter flex-grow overflow-auto pb-4">
-        <ChannelContainer
+        <ChannelItemContainer
           channelType="채팅"
           onClickAddChannel={onClickAddChannel}
           isServerOwner={server.ownerId === userId}
@@ -191,11 +177,12 @@ const ChannelSideBar = ({
                   onClickChannel={onClickChannels}
                   isOwner={server.ownerId === userId}
                   onClickDeleteChannel={handleDeleteChannel}
+                  isCurrentChannel={channelId === channel.id.toString()}
                 />
               )
             })}
-        </ChannelContainer>
-        <ChannelContainer
+        </ChannelItemContainer>
+        <ChannelItemContainer
           channelType="음성"
           onClickAddChannel={onClickAddChannel}
           isServerOwner={server.ownerId === userId}
@@ -212,10 +199,11 @@ const ChannelSideBar = ({
                   onClickChannel={onClickChannels}
                   isOwner={server.ownerId === userId}
                   onClickDeleteChannel={handleDeleteChannel}
+                  isCurrentChannel={channelId === channel.id.toString()}
                 />
               )
             })}
-        </ChannelContainer>
+        </ChannelItemContainer>
       </div>
       <div className="bg-black">
         {mediaRoomId && (

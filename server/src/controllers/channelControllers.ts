@@ -135,8 +135,6 @@ export const getChannelMessages = async (req: Request, res: Response) => {
       },
     })
 
-    await delay(1000)
-
     const nextCursor =
       messages.length === Number(limit)
         ? messages[messages.length - 1].id

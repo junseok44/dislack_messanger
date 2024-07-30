@@ -12,6 +12,7 @@
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.7.2",
+    "clsx": "^2.1.1",
     "framer-motion": "^11.2.13",
     "immer": "^10.1.1",
     "lucide-react": "^0.416.0",
@@ -24,6 +25,7 @@
     "react-scripts": "5.0.1",
     "react-switch": "^7.0.0",
     "socket.io-client": "^4.7.5",
+    "tailwind-merge": "^2.4.0",
     "uuid": "^10.0.0",
     "web-vitals": "^2.1.4",
     "zustand": "^4.5.4"

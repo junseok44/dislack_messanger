@@ -42,7 +42,9 @@ const useMessages = (channelId: number | undefined) => {
     }
   >({
     queryKey: [API_ROUTE.MESSAGES.GET(channelId!), channelId],
-    queryFn: ({ pageParam }) => {
+    queryFn: async ({ pageParam }) => {
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+
       return fetchMessages(channelId!, pageParam.nextCursor)
     },
     getNextPageParam: (lastPage) => {
