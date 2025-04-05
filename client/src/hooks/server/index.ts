@@ -101,6 +101,7 @@ export const useDeleteServer = () => {
 export const useUserServersWithChannels = () => {
   return useQuery<Server[]>({
     queryKey: QUERY_KEYS.USER_SERVERS_WITH_CHANNELS,
+
     queryFn: async () => {
       const servers: getAllUserServersWithChannelsResponse = await api.get(
         API_ROUTE.SERVER.GET_USER_SERVERS_WITH_CHANNELS,

@@ -8,9 +8,6 @@
     "@stripe/stripe-js": "^4.1.0",
     "@tanstack/react-query": "^5.49.2",
     "@tanstack/react-query-devtools": "^5.51.11",
-    "@testing-library/jest-dom": "^5.17.0",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0",
     "axios": "^1.7.2",
     "clsx": "^2.1.1",
     "framer-motion": "^11.2.13",
@@ -33,7 +30,7 @@
   "scripts": {
     "start": "craco start",
     "build": "craco build",
-    "test": "react-scripts test",
+    "test": "craco test",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -55,15 +52,32 @@
     ]
   },
   "devDependencies": {
+    "@babel/preset-env": "^7.25.2",
+    "@babel/preset-react": "^7.24.7",
+    "@babel/preset-typescript": "^7.24.7",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.4.8",
+    "@testing-library/react": "^16.0.0",
+    "@testing-library/react-hooks": "^8.0.1",
+    "@testing-library/user-event": "^14.5.2",
+    "@types/jest": "^29.5.12",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@types/react-modal": "^3.16.3",
     "@types/uuid": "^10.0.0",
+    "babel-jest": "^29.7.0",
+    "jest": "^27.5.1",
     "prettier": "^3.3.3",
     "prettier-plugin-tailwindcss": "^0.6.5",
     "tailwindcss": "^3.4.4",
     "tsconfig-paths-webpack-plugin": "^4.1.0",
     "typescript": "^4.9.5"
   },
-  "proxy": "http://api_server:8001"
+  "proxy": "http://api_server:8001",
+  "jest": {
+    "moduleNameMapper": {
+      "^moduleName$": "<rootDir>/src/__mocks__/moduleName.js",
+      "^@/(.*)$": "<rootDir>/src/$1"
+    }
+  }
 }

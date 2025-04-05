@@ -3,7 +3,7 @@ import { SOCKET_EVENTS, SOCKET_NAMESPACES } from '@/constants/sockets'
 import { useAuth } from '@/contexts/AuthContext'
 import { useGetCurrentServerFromChannelId } from '@/hooks/server'
 import useMediaChatStore from '@/store/mediaStore'
-import React, { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { io, Socket } from 'socket.io-client'
 
 export interface RemoteStream {
